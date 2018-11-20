@@ -16,6 +16,8 @@ CSV zip files (corresponding to each month) of Citi Bike data for 2017 was downl
 ```{r Data Import Function}
 # removed col names type for now and went with automatic column parsing which seemed to work  well
 
+# Need to add a variable/split date so we can identify if the trip is in the January or March dataset 
+
 citibike_import = function(file) {
   
   df = read_csv(file, col_names = TRUE) %>%
@@ -43,6 +45,29 @@ citibike_tidy =
 Reserach Questions of Interest:
 
 * Most popular/used beginning station (and least)
+
+```{r Station IDs}
+# Top 10 used stations in all dataset (Jan and March)
+
+citibike_tidy %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  filter(n > 8300) %>% 
+  knitr::kable()
+
+# Bottom 10 used stations in all dataset (Jan and March)
+# Remove NYCBS Depots? 
+
+citibike_tidy %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>% 
+  filter(n < 50) %>% 
+  knitr::kable()
+
+```
+
 
 * Most popular/used ending station (and least)
 
