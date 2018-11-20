@@ -38,8 +38,26 @@ citibike_tidy =
 # Reading the data directly from website doesn't work - thousands of parsing failures, even with auto parsing and when specifing column parsing in function
 # citibike_import("https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip"),
 # citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
-
-
-
 ```
+
+Reserach Questions of Interest:
+
+* Most popular/used beginning station (and least)
+
+* Most popular/used ending station (and least)
+
+* Mapping the above (like airbnb from class)
+
+* Men v. Women (1 = Male, 2 = Female)
+
+* Age rangers and average time spent on ride
+
+* Customers (24h & 3 day passes) vs. Subscribers (Annual Member)
+
+* Plots of amounts of rides over time of day 
+
+* Most/least popular days of the week of travel 
+
+* Jan. vs. March trips
+
 
