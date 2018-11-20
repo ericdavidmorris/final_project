@@ -24,6 +24,8 @@ citibike_import = function(file) {
     janitor::clean_names() %>% 
     separate(start_time, into = c("start_date", "start_time"), sep = " ") %>% 
     separate(stop_time, into = c("stop_date", "stop_time"), sep = " ") %>% 
+    separate(start_date, into = c("start_year", "start_month", "start_day"), sep = "-") %>% 
+    separate(stop_date, into = c("stop_year", "stop_month", "stop_day"), sep = "-") %>% 
     mutate(user_type = tolower(user_type),
            trip_minutes = (trip_duration / 60),
            rider_age = (2017 - birth_year))
@@ -47,23 +49,46 @@ Reserach Questions of Interest:
 * Most popular/used beginning station (and least)
 
 ```{r Station IDs}
-# Top 10 used stations in all dataset (Jan and March)
+# Top 10 used stations in all dataset (Jan)
 
 citibike_tidy %>% 
+  filter(start_month == "01") %>% 
   group_by(start_station_id, start_station_name) %>% 
   summarize(n = n()) %>% 
   arrange(desc(n)) %>% 
-  filter(n > 8300) %>% 
+  filter(n > 3990) %>% 
   knitr::kable()
 
-# Bottom 10 used stations in all dataset (Jan and March)
+# Top 10 used stations in all dataset (March)
+
+citibike_tidy %>% 
+  filter(start_month == "03") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  filter(n > 4300) %>% 
+  knitr::kable()
+
+# Bottom 10 used stations in all dataset (Jan)
 # Remove NYCBS Depots? 
 
 citibike_tidy %>% 
+  filter(start_month == "01") %>% 
   group_by(start_station_id, start_station_name) %>% 
   summarize(n = n()) %>% 
   arrange(n) %>% 
-  filter(n < 50) %>% 
+  filter(n < 60) %>% 
+  knitr::kable()
+
+# Bottom 10 used stations in all dataset (March)
+# Remove NYCBS Depots? 
+
+citibike_tidy %>% 
+  filter(start_month == "03") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>% 
+  filter(n < 40) %>% 
   knitr::kable()
 
 ```
