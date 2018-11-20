@@ -1,0 +1,53 @@
+---
+title: "Data Import"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+## Data Import
+
+CSV files (corresponding to month) of Citi Bike data for 2017 was downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html). No public API was available for data download, when using read_csv, we felt it was better to download directly from the data source for reproducibility purposes however were faced with parsing errors. Additionally, the file sizes are extremely large and commits/pushes to git were taking a very long time. We downloaded zip files and imported those. The data is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). 
+
+```{r Data Import Function}
+
+citibike_import = function(file) {
+  
+  df = read_csv(file, col_names = TRUE, col_types = "iccicddicddicid") %>%
+    janitor::clean_names() %>% 
+    separate(start_time, into = c("start_date", "start_time"), sep = " ") %>% 
+    separate(stop_time, into = c("stop_date", "stop_time"), sep = " ") %>% 
+    mutate(user_type = tolower(user_type))
+    
+  df
+  
+}
+
+citibike_tidy = 
+  bind_rows(
+    citibike_import("./data/201701-citibike-tripdata.csv.zip"))
+# works but huge file problems again, maybe restrict to one month of data  citibike_import("./data/201702-citibike-tripdata.csv.zip"))
+
+
+#reading directly from website doesn't work as well,lots of parsing failures 
+# citibike_import("https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip"),
+# citibike_import("https://s3.amazonaws.com/tripdata/201702-citibike-tripdata.csv.zip"))
+
+# Computer crashed when trying to import a full year of data - will need to decide which to do, also removed from data folder
+#    citibike_import("./data/201703-citibike-tripdata.csv"),
+#    citibike_import("./data/201704-citibike-tripdata.csv"),
+#    citibike_import("./data/201705-citibike-tripdata.csv"),
+#    citibike_import("./data/201706-citibike-tripdata.csv"),
+#    citibike_import("./data/201707-citibike-tripdata.csv"),
+#    citibike_import("./data/201708-citibike-tripdata.csv"),
+#    citibike_import("./data/201709-citibike-tripdata.csv"),
+#    citibike_import("./data/201710-citibike-tripdata.csv"),
+#    citibike_import("./data/201711-citibike-tripdata.csv"),
+#    citibike_import("./data/201712-citibike-tripdata.csv")) 
+
+```
+
