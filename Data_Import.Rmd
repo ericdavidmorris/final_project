@@ -7,6 +7,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(plotly)
 ```
 
 ## Data Import
@@ -49,7 +50,7 @@ Reserach Questions of Interest:
 * Most popular/used beginning station (and least)
 
 ```{r Station IDs}
-# Top 10 used stations in all dataset (Jan)
+# Top 10 used beginning stations in all dataset (Jan)
 
 citibike_tidy %>% 
   filter(start_month == "01") %>% 
@@ -59,7 +60,7 @@ citibike_tidy %>%
   filter(n > 3990) %>% 
   knitr::kable()
 
-# Top 10 used stations in all dataset (March)
+# Top 10 used beginning stations in all dataset (March)
 
 citibike_tidy %>% 
   filter(start_month == "03") %>% 
@@ -69,7 +70,7 @@ citibike_tidy %>%
   filter(n > 4300) %>% 
   knitr::kable()
 
-# Bottom 10 used stations in all dataset (Jan)
+# Bottom 10 used beginning stations in all dataset (Jan)
 # Remove NYCBS Depots? 
 
 citibike_tidy %>% 
@@ -80,7 +81,7 @@ citibike_tidy %>%
   filter(n < 60) %>% 
   knitr::kable()
 
-# Bottom 10 used stations in all dataset (March)
+# Bottom 10 used beginning stations in all dataset (March)
 # Remove NYCBS Depots? 
 
 citibike_tidy %>% 
@@ -95,6 +96,48 @@ citibike_tidy %>%
 
 
 * Most popular/used ending station (and least)
+```{r pop_stat_plot}
+# Top 10 used end stations in all dataset (Jan)
+
+citibike_tidy %>% 
+  filter(start_month == "01") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  filter(n > 3990) %>% 
+  knitr::kable()
+
+# Top 10 used end stations in all dataset (March)
+
+citibike_tidy %>% 
+  filter(start_month == "03") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  filter(n > 4300) %>% 
+  knitr::kable()
+
+# Bottom 10 used end stations in all dataset (Jan)
+
+citibike_tidy %>% 
+  filter(start_month == "01") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>% 
+  filter(n < 60) %>% 
+  knitr::kable()
+
+# Bottom 10 used end stations in all dataset (March)
+
+citibike_tidy %>% 
+  filter(start_month == "03") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>% 
+  filter(n < 40) %>% 
+  knitr::kable()
+```
+
 
 * Mapping the above (like airbnb from class)
 
