@@ -4,7 +4,7 @@ Data Import
 Data Import
 -----------
 
-CSV zip files (corresponding to each month) of Citi Bike data for 2017 was downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html). Originally, we felt it was better to download directly from the data source for reproducibility purposes. However, when using read\_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips of 25-70 MB). We decided to download the zips of two months and add them to our project's data folder. The data is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy).
+CSV zip files (corresponding to each month) of Citi Bike data for 2017 were downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html). Originally, we felt it was better to download directly from the data source for reproducibility purposes. However, when using read\_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips of 25-70 MB). We decided to download the zips of two months and add them to our project's data folder. The data is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy).
 
 ``` r
 # removed col names type for now and went with automatic column parsing which seemed to work  well
@@ -75,7 +75,7 @@ citibike_tidy =
 # citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
 ```
 
-Reserach Questions of Interest:
+Research Questions of Interest:
 
 -   Most popular/used beginning station (and least)
 
@@ -296,10 +296,49 @@ citibike_tidy %>%
 |              3337| Dwight St & Van Dyke St         |   39|
 
 -   Mapping the above (like airbnb from class)
+-   ERIC!!! \*
 
 -   Men v. Women (1 = Male, 2 = Female)
 
--   Age rangers and average time spent on ride
+``` r
+# Histogram of when people start their rides, by gender!
+citibike_tidy %>% 
+  group_by(gender) %>% 
+  filter(gender != 0) %>% 
+  mutate(start_hour = str_sub(start_time, 0, 2),
+         start_hour = as.numeric(start_hour)) %>% 
+  ggplot(aes(x = start_hour)) +
+  geom_histogram() +
+  labs(x = "Start hour",
+       y = "Frequency")
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](Data_Import_files/figure-markdown_github/gender-1.png)
+
+``` r
+  facet_grid(~ gender)
+```
+
+    ## <ggproto object: Class FacetGrid, Facet, gg>
+    ##     compute_layout: function
+    ##     draw_back: function
+    ##     draw_front: function
+    ##     draw_labels: function
+    ##     draw_panels: function
+    ##     finish_data: function
+    ##     init_scales: function
+    ##     map_data: function
+    ##     params: list
+    ##     setup_data: function
+    ##     setup_params: function
+    ##     shrink: TRUE
+    ##     train_scales: function
+    ##     vars: function
+    ##     super:  <ggproto object: Class FacetGrid, Facet, gg>
+
+-   Age ranges and average time spent on ride
 
 -   Customers (24h & 3 day passes) vs. Subscribers (Annual Member)
 
@@ -308,3 +347,30 @@ citibike_tidy %>%
 -   Most/least popular days of the week of travel
 
 -   Jan. vs. March trips
+
+-   Map of where people start
+
+-   Map of where people end (kind of philosophical, no?)
+
+-   Length of ride against day of month, by month
+
+``` r
+# Histogram of how long people ride for, by month!
+  citibike_tidy %>% 
+  mutate(start_day = as.numeric(start_day)) %>% 
+  group_by(start_month, start_day) %>% 
+    mutate(mean_trip_hour = mean(trip_minutes / 60)) %>% 
+    ggplot(aes(x = start_day, y = mean_trip_hour, color = start_month)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(se = FALSE) +
+    labs(x = "Day of the month",
+         y = "Mean length of trip (hours)") + 
+    scale_color_hue(name = "Month") +
+    facet_grid(~ start_month)
+```
+
+    ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
+
+![](Data_Import_files/figure-markdown_github/unnamed-chunk-1-1.png)
+
+\*ongoing data questions: do we need both trip\_duration and trip\_minutes?
