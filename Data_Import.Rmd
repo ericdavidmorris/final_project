@@ -155,12 +155,23 @@ citibike_tidy %>%
   ggplot(aes(x = start_hour)) +
   geom_histogram() +
   labs(x = "Start hour",
-       y = "Frequency")
+       y = "Frequency") +
   facet_grid(~ gender)
 ```
 
 
 * Age ranges and average time spent on ride
+```{r age_length_plot}
+# who are the people over 100; also, this is kind of ug the way i have done it; whose trips are more than 500 hours??????? how is this calculated??
+citibike_tidy %>% 
+  filter(gender != 0) %>% 
+  mutate(trip_hour = trip_minutes / 60) %>% 
+  ggplot(aes(x = rider_age, y = trip_hour)) + 
+  geom_point(alpha = 0.5) +
+  geom_smooth(se = FALSE) +
+  facet_grid(~ gender)
+```
+
 
 * Customers (24h & 3 day passes) vs. Subscribers (Annual Member)
 
@@ -171,12 +182,29 @@ citibike_tidy %>%
 * Jan. vs. March trips
 
 * Map of where people start
+```{r map_start_plot}
+# this looks pretty dumb; is it a scale issue?
+citibike_tidy %>% 
+  filter(start_station_longitude != 0) %>% 
+  ggplot(aes(x = start_station_longitude, y = start_station_latitude)) + 
+  geom_point()
+```
+
 
 * Map of where people end (kind of philosophical, no?)
+```{r map_end_plot}
+citibike_tidy %>% 
+  filter(end_station_longitude != 0) %>% 
+  ggplot(aes(x = end_station_longitude, y = end_station_latitude)) + 
+  geom_point()
+```
+
 
 * Length of ride against day of month, by month
-```{r}
+```{r trip_length_plot}
 # Histogram of how long people ride for, by month!
+# can we change the month labels??
+
   citibike_tidy %>% 
   mutate(start_day = as.numeric(start_day)) %>% 
   group_by(start_month, start_day) %>% 

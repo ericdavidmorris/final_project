@@ -340,6 +340,25 @@ citibike_tidy %>%
 
 -   Age ranges and average time spent on ride
 
+``` r
+# who are the people over 100; also, this is kind of ug the way i have done it; whose trips are more than 500 hours??????? how is this calculated??
+citibike_tidy %>% 
+  filter(gender != 0) %>% 
+  mutate(trip_hour = trip_minutes / 60) %>% 
+  ggplot(aes(x = rider_age, y = trip_hour)) + 
+  geom_point(alpha = 0.5) +
+  geom_smooth(se = FALSE) +
+  facet_grid(~ gender)
+```
+
+    ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
+
+    ## Warning: Removed 45 rows containing non-finite values (stat_smooth).
+
+    ## Warning: Removed 45 rows containing missing values (geom_point).
+
+![](Data_Import_files/figure-markdown_github/age_length_plot-1.png)
+
 -   Customers (24h & 3 day passes) vs. Subscribers (Annual Member)
 
 -   Plots of amounts of rides over time of day
@@ -350,12 +369,33 @@ citibike_tidy %>%
 
 -   Map of where people start
 
+``` r
+# this looks pretty dumb; is it a scale issue?
+citibike_tidy %>% 
+  filter(start_station_longitude != 0) %>% 
+  ggplot(aes(x = start_station_longitude, y = start_station_latitude)) + 
+  geom_point()
+```
+
+![](Data_Import_files/figure-markdown_github/map_start_plot-1.png)
+
 -   Map of where people end (kind of philosophical, no?)
+
+``` r
+citibike_tidy %>% 
+  filter(end_station_longitude != 0) %>% 
+  ggplot(aes(x = end_station_longitude, y = end_station_latitude)) + 
+  geom_point()
+```
+
+![](Data_Import_files/figure-markdown_github/map_end_plot-1.png)
 
 -   Length of ride against day of month, by month
 
 ``` r
 # Histogram of how long people ride for, by month!
+# can we change the month labels??
+
   citibike_tidy %>% 
   mutate(start_day = as.numeric(start_day)) %>% 
   group_by(start_month, start_day) %>% 
@@ -371,6 +411,6 @@ citibike_tidy %>%
 
     ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
 
-![](Data_Import_files/figure-markdown_github/unnamed-chunk-1-1.png)
+![](Data_Import_files/figure-markdown_github/trip_length_plot-1.png)
 
 \*ongoing data questions: do we need both trip\_duration and trip\_minutes?
