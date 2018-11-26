@@ -7,6 +7,8 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(plotly)
+library(viridis)
 ```
 
 ## Data Import
@@ -49,7 +51,7 @@ Reserach Questions of Interest:
 * Most popular/used beginning station (and least)
 
 ```{r Station IDs}
-# Top 10 used stations in all dataset (Jan)
+# Top 10 used starting stations in Jan dataset
 
 citibike_tidy %>% 
   filter(start_month == "01") %>% 
@@ -59,7 +61,17 @@ citibike_tidy %>%
   filter(n > 3990) %>% 
   knitr::kable()
 
-# Top 10 used stations in all dataset (March)
+#Bad plot
+citibike_tidy %>% 
+  filter(start_month == "01") %>% 
+  group_by(start_station_id) %>% 
+  summarize(n = n()) %>% 
+  filter(n > 3000) %>% 
+  ggplot(aes(x = start_station_id, y = n)) +
+  geom_point(alpha = 0.3) 
+
+  
+# Top 10 used starting stations in March dataset
 
 citibike_tidy %>% 
   filter(start_month == "03") %>% 
@@ -69,7 +81,7 @@ citibike_tidy %>%
   filter(n > 4300) %>% 
   knitr::kable()
 
-# Bottom 10 used stations in all dataset (Jan)
+# Bottom 10 used starting stations in Jan dataset 
 # Remove NYCBS Depots? 
 
 citibike_tidy %>% 
@@ -80,7 +92,7 @@ citibike_tidy %>%
   filter(n < 60) %>% 
   knitr::kable()
 
-# Bottom 10 used stations in all dataset (March)
+# Bottom 10 used starting stations in March dataset
 # Remove NYCBS Depots? 
 
 citibike_tidy %>% 
@@ -97,6 +109,58 @@ citibike_tidy %>%
 * Most popular/used ending station (and least)
 
 * Mapping the above (like airbnb from class)
+
+```{r Plotly}
+
+citibike_tidy %>% 
+  filter(start_month == "01") %>% 
+  group_by(start_station_id, start_station_name, start_station_latitude, start_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  filter(n > 1000) %>% 
+  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.3, 
+          color = ~n)
+
+##ggplot of above
+
+citibike_tidy %>% 
+  filter(start_month == "01") %>% 
+  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  filter(n > 100) %>% 
+  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
+  geom_point(alpha = 0.3) + 
+  scale_color_viridis() +
+  coord_cartesian() +
+  theme_classic()
+
+## ggplot of end stations
+
+citibike_tidy %>% 
+  filter(start_month == "01") %>% 
+  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  filter(n > 100) %>% 
+  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
+  geom_point(alpha = 0.3) + 
+  scale_color_viridis() +
+  coord_cartesian() +
+  theme_classic()
+
+
+# least used stations plotly 
+
+citibike_tidy %>% 
+  filter(start_month == "01") %>% 
+  group_by(start_station_name, start_station_latitude, start_station_longitude) %>%  
+  summarize(n = n()) %>% 
+  arrange(n) %>% 
+  filter(n < 500) %>% 
+  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.3, 
+          color = ~n)
+```
+
 
 * Men v. Women (1 = Male, 2 = Female)
 
