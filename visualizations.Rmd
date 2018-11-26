@@ -1,6 +1,5 @@
 ---
 title: "Visualizations"
-author: "Eric Morris, Grace Liu and Tatini Mal-Sarkar"
 output: html_document
 ---
 
