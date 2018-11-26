@@ -5,17 +5,23 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 library(tidyverse)
+<<<<<<< HEAD
 library(plotly)
 library(viridis)
+=======
+library(ggridges)
+library(plotly)
+library(lubridate)
+library(stringr)
+>>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
 ```
 
 ## Data Import
 
-CSV zip files (corresponding to each month) of Citi Bike data for 2017 was downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html). Originally, we felt it was better to download directly from the data source for reproducibility purposes. However, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips of 25-70 MB). We decided to download the zips of two months and add them to our project's data folder. The data is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). 
+CSV zip files (corresponding to each month) of Citi Bike data for 2017 were downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html). Originally, we felt it was better to download directly from the data source for reproducibility purposes. However, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips of 25-70 MB). We decided to download the zips of two months and add them to our project's data folder. The data is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). 
 
-```{r Data Import Function}
+```{r data_import_func}
 # removed col names type for now and went with automatic column parsing which seemed to work  well
 
 # Need to add a variable/split date so we can identify if the trip is in the January or March dataset 
@@ -46,12 +52,17 @@ citibike_tidy =
 # citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
 ```
 
-Reserach Questions of Interest:
+Research Questions of Interest:
 
 * Most popular/used beginning station (and least)
 
+<<<<<<< HEAD
 ```{r Station IDs}
 # Top 10 used starting stations in Jan dataset
+=======
+```{r beg_stat_ids}
+# Top 10 used beginning stations in all dataset (Jan)
+>>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
 
 citibike_tidy %>% 
   filter(start_month == "01") %>% 
@@ -61,6 +72,7 @@ citibike_tidy %>%
   filter(n > 3990) %>% 
   knitr::kable()
 
+<<<<<<< HEAD
 #Bad plot
 citibike_tidy %>% 
   filter(start_month == "01") %>% 
@@ -72,6 +84,9 @@ citibike_tidy %>%
 
   
 # Top 10 used starting stations in March dataset
+=======
+# Top 10 used beginning stations in all dataset (March)
+>>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
 
 citibike_tidy %>% 
   filter(start_month == "03") %>% 
@@ -81,7 +96,11 @@ citibike_tidy %>%
   filter(n > 4300) %>% 
   knitr::kable()
 
+<<<<<<< HEAD
 # Bottom 10 used starting stations in Jan dataset 
+=======
+# Bottom 10 used beginning stations in all dataset (Jan)
+>>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
 # Remove NYCBS Depots? 
 
 citibike_tidy %>% 
@@ -92,7 +111,11 @@ citibike_tidy %>%
   filter(n < 60) %>% 
   knitr::kable()
 
+<<<<<<< HEAD
 # Bottom 10 used starting stations in March dataset
+=======
+# Bottom 10 used beginning stations in all dataset (March)
+>>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
 # Remove NYCBS Depots? 
 
 citibike_tidy %>% 
@@ -107,8 +130,51 @@ citibike_tidy %>%
 
 
 * Most popular/used ending station (and least)
+```{r end_stat_ids}
+# Top 10 used end stations in all dataset (Jan)
+
+citibike_tidy %>% 
+  filter(start_month == "01") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  filter(n > 3990) %>% 
+  knitr::kable()
+
+# Top 10 used end stations in all dataset (March)
+
+citibike_tidy %>% 
+  filter(start_month == "03") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n)) %>% 
+  filter(n > 4300) %>% 
+  knitr::kable()
+
+# Bottom 10 used end stations in all dataset (Jan)
+
+citibike_tidy %>% 
+  filter(start_month == "01") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>% 
+  filter(n < 60) %>% 
+  knitr::kable()
+
+# Bottom 10 used end stations in all dataset (March)
+
+citibike_tidy %>% 
+  filter(start_month == "03") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>% 
+  filter(n < 40) %>% 
+  knitr::kable()
+```
+
 
 * Mapping the above (like airbnb from class)
+* ERIC!!! *
 
 ```{r Plotly}
 
@@ -163,8 +229,33 @@ citibike_tidy %>%
 
 
 * Men v. Women (1 = Male, 2 = Female)
+```{r gender}
+# Histogram of when people start their rides, by gender!
+citibike_tidy %>% 
+  group_by(gender) %>% 
+  filter(gender != 0) %>% 
+  mutate(start_hour = str_sub(start_time, 0, 2),
+         start_hour = as.numeric(start_hour)) %>% 
+  ggplot(aes(x = start_hour)) +
+  geom_histogram() +
+  labs(x = "Start hour",
+       y = "Frequency") +
+  facet_grid(~ gender)
+```
 
-* Age rangers and average time spent on ride
+
+* Age ranges and average time spent on ride
+```{r age_length_plot}
+# who are the people over 100; also, this is kind of ug the way i have done it; whose trips are more than 500 hours??????? how is this calculated??
+citibike_tidy %>% 
+  filter(gender != 0) %>% 
+  mutate(trip_hour = trip_minutes / 60) %>% 
+  ggplot(aes(x = rider_age, y = trip_hour)) + 
+  geom_point(alpha = 0.5) +
+  geom_smooth(se = FALSE) +
+  facet_grid(~ gender)
+```
+
 
 * Customers (24h & 3 day passes) vs. Subscribers (Annual Member)
 
@@ -174,4 +265,42 @@ citibike_tidy %>%
 
 * Jan. vs. March trips
 
+* Map of where people start
+```{r map_start_plot}
+# this looks pretty dumb; is it a scale issue?
+citibike_tidy %>% 
+  filter(start_station_longitude != 0) %>% 
+  ggplot(aes(x = start_station_longitude, y = start_station_latitude)) + 
+  geom_point()
+```
 
+
+* Map of where people end (kind of philosophical, no?)
+```{r map_end_plot}
+citibike_tidy %>% 
+  filter(end_station_longitude != 0) %>% 
+  ggplot(aes(x = end_station_longitude, y = end_station_latitude)) + 
+  geom_point()
+```
+
+
+* Length of ride against day of month, by month
+```{r trip_length_plot}
+# Histogram of how long people ride for, by month!
+# can we change the month labels??
+
+  citibike_tidy %>% 
+  mutate(start_day = as.numeric(start_day)) %>% 
+  group_by(start_month, start_day) %>% 
+    mutate(mean_trip_hour = mean(trip_minutes / 60)) %>% 
+    ggplot(aes(x = start_day, y = mean_trip_hour, color = start_month)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(se = FALSE) +
+    labs(x = "Day of the month",
+         y = "Mean length of trip (hours)") + 
+    scale_color_hue(name = "Month") +
+    facet_grid(~ start_month)
+```
+
+
+*ongoing data questions: do we need both trip_duration and trip_minutes?
