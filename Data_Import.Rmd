@@ -1,28 +1,27 @@
 ---
-title: "Data Import"
+title: "Data Import and Exploration"
 output: github_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-<<<<<<< HEAD
 library(plotly)
 library(viridis)
-=======
 library(ggridges)
 library(plotly)
 library(lubridate)
 library(stringr)
->>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
 ```
 
-## Data Import
+### Introduction 
 
-CSV zip files (corresponding to each month) of Citi Bike data for 2017 were downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html). Originally, we felt it was better to download directly from the data source for reproducibility purposes. However, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips of 25-70 MB). We decided to download the zips of two months and add them to our project's data folder. The data is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). 
+## *Data Import*
+
+CSV zip files (corresponding to each month) of Citi Bike data for 2017 were downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html), which is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). Originally, we felt it was better to download directly from the data source for reproducibility purposes, however, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips vary from 25-70 MB). We decided to download the zips of two months of interest and add them to our project's data folder and import from there.
 
 ```{r data_import_func}
-# removed col names type for now and went with automatic column parsing which seemed to work  well
+# Removed col names type for now and went with automatic column parsing which seemed to work  well
 
 # Need to add a variable/split date so we can identify if the trip is in the January or March dataset 
 
@@ -50,19 +49,17 @@ citibike_tidy =
 # Reading the data directly from website doesn't work - thousands of parsing failures, even with auto parsing and when specifing column parsing in function
 # citibike_import("https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip"),
 # citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
+
 ```
 
-Research Questions of Interest:
+## Research Questions of Interest:
 
 * Most popular/used beginning station (and least)
 
-<<<<<<< HEAD
 ```{r Station IDs}
 # Top 10 used starting stations in Jan dataset
-=======
-```{r beg_stat_ids}
+
 # Top 10 used beginning stations in all dataset (Jan)
->>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
 
 citibike_tidy %>% 
   filter(start_month == "01") %>% 
@@ -72,7 +69,7 @@ citibike_tidy %>%
   filter(n > 3990) %>% 
   knitr::kable()
 
-<<<<<<< HEAD
+
 #Bad plot
 citibike_tidy %>% 
   filter(start_month == "01") %>% 
@@ -84,9 +81,9 @@ citibike_tidy %>%
 
   
 # Top 10 used starting stations in March dataset
-=======
+
 # Top 10 used beginning stations in all dataset (March)
->>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
+
 
 citibike_tidy %>% 
   filter(start_month == "03") %>% 
@@ -96,11 +93,11 @@ citibike_tidy %>%
   filter(n > 4300) %>% 
   knitr::kable()
 
-<<<<<<< HEAD
+
 # Bottom 10 used starting stations in Jan dataset 
-=======
+
 # Bottom 10 used beginning stations in all dataset (Jan)
->>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
+
 # Remove NYCBS Depots? 
 
 citibike_tidy %>% 
@@ -111,11 +108,10 @@ citibike_tidy %>%
   filter(n < 60) %>% 
   knitr::kable()
 
-<<<<<<< HEAD
 # Bottom 10 used starting stations in March dataset
-=======
+
 # Bottom 10 used beginning stations in all dataset (March)
->>>>>>> 535c35bb192000c40c32a133aa0697a7af1f7511
+
 # Remove NYCBS Depots? 
 
 citibike_tidy %>% 
