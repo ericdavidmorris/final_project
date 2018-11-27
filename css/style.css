@@ -1,10 +1,4 @@
-@font-face
-{
-  font-family: 'myFancyFont';
-  src: url('fonts/SCRIPTIN.ttf');
-}
-
-div.scroll {
+.scroll {
     background-color: #FFFFFF;
     height:225px;
     width: 100%;
@@ -18,3 +12,4 @@ blockquote {
     margin-top: .25em;
     margin-left: 20px;
 }
+
