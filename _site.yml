@@ -1,0 +1,39 @@
+name: "p8105_finalproject"
+output_dir: "."
+navbar:
+  title: "The [Bi]Cycles of Life"
+  right:
+    - text: "home"
+      href: index.html
+    - text: "about"
+      href: about.html
+    - text: "project"
+      menu:
+      - text: "about the data"
+        href: data.html
+      - text: "analysis + findings"
+        href: analysis.html
+      - text: "visualizations"
+        href: visualizations.html
+    - text: "contact"
+      menu:
+        - icon: fa-envelope
+          text: "Eric Morris"
+          href: mailto:edm2152@cumc.columbia.edu
+        - icon: fa-envelope
+          text: "Grace Liu"
+          href: mailto:gsl2116@cumc.columbia.edu
+        - icon: fa-envelope
+          text: "Tatini Mal-Sakar"
+          href: mailto:tm2680@cumc.columbia.edu
+    - icon: fa-youtube fa-lg
+      href: https://www.youtube.com
+    - icon: fa-github fa-lg
+      href: https://github.com/ericdavidmorris/final_project
+    - icon: fa-bicycle fa-lg
+      href: http://citibikenyc.com
+output:
+  html_document:
+    theme: journal
+    highlight: textmate
+    css: css/style.css
