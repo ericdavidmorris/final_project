@@ -12,6 +12,7 @@ library(ggridges)
 library(plotly)
 library(lubridate)
 library(stringr)
+library(dplyr)
 ```
 
 ### Introduction 
@@ -148,8 +149,8 @@ citibike_tidy %>%
   filter(start_month == "03") %>% 
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
-  arrange(desc(n)) %>% 
-  filter(n > 4300) %>% 
+  ungroup() %>% 
+  top_n(10, n) %>% 
   knitr::kable()
 
 # Bottom 10 used end stations in all dataset (Jan)
@@ -158,8 +159,8 @@ citibike_tidy %>%
   filter(start_month == "01") %>% 
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
-  arrange(n) %>% 
-  filter(n < 60) %>% 
+  ungroup() %>% 
+  top_n(-10, n) %>% 
   knitr::kable()
 
 # Bottom 10 used end stations in all dataset (March)
@@ -168,8 +169,18 @@ citibike_tidy %>%
   filter(start_month == "03") %>% 
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
-  arrange(n) %>% 
-  filter(n < 40) %>% 
+  ungroup() %>% 
+  top_n(-10, n) %>% 
+  knitr::kable()
+```
+
+```{r}
+citibike_tidy %>% 
+  filter(start_month == "03") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(10, n) %>% 
   knitr::kable()
 ```
 

@@ -9,4 +9,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Analysis
 
-Analysis methods and findings.
+First, we restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. 
+
+## Findings
