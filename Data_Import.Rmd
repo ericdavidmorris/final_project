@@ -201,6 +201,8 @@ citibike_tidy %>%
 
 ##ggplot of above
 
+## map of nyc based on lat/long, overlay ggplot on top? https://cran.r-project.org/web/packages/magick/vignettes/intro.html#combining
+
 citibike_tidy %>% 
   filter(start_month == "01") %>% 
   group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
