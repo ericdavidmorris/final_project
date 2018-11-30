@@ -203,8 +203,21 @@ citibike_tidy %>%
 
 ## map of nyc based on lat/long, overlay ggplot on top? https://cran.r-project.org/web/packages/magick/vignettes/intro.html#combining
 
+#Jan
 citibike_tidy %>% 
-  filter(start_month == "01") %>% 
+  filter(start_month == "January") %>% 
+  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  filter(n > 100) %>% 
+  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
+  geom_point(alpha = 0.3) + 
+  scale_color_viridis() +
+  coord_cartesian() +
+  theme_classic()
+
+#March 
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
   group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
   summarize(n = n()) %>% 
   filter(n > 100) %>% 
@@ -216,8 +229,9 @@ citibike_tidy %>%
 
 ## ggplot of end stations
 
+#Jan
 citibike_tidy %>% 
-  filter(start_month == "01") %>% 
+  filter(start_month == "January") %>% 
   group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
   summarize(n = n()) %>% 
   filter(n > 100) %>% 
@@ -227,6 +241,17 @@ citibike_tidy %>%
   coord_cartesian() +
   theme_classic()
 
+#March
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  filter(n > 100) %>% 
+  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
+  geom_point(alpha = 0.3) + 
+  scale_color_viridis() +
+  coord_cartesian() +
+  theme_classic()
 
 # least used stations plotly 
 
