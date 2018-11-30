@@ -295,14 +295,9 @@ citibike_tidy %>%
   facet_grid(~ gender)
 ```
 
-
-* Customers (24h & 3 day passes) vs. Subscribers (Annual Member)
-
-* Plots of amounts of rides over time of day 
-
 * Most/least popular days of the week of travel 
 
-* Jan. vs. March trips
+* Simple linear regression of trip duration vs. age, sex, time of day (categorical: morning rush hour, morning, evening rush hour), day of week
 
 * Map of where people start
 ```{r map_start_plot}
