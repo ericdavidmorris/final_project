@@ -52,7 +52,7 @@ citibike_tidy =
   bind_rows(citibike_import("./data/201701-citibike-tripdata.csv.zip"),
             citibike_import("./data/201703-citibike-tripdata.csv.zip"))
 
-# Reading the data directly from website doesn't work - thousands of parsing failures, even with auto parsing and when specifing column parsing in function
+# Reading the data directly from website doesn't work - thousands of parsing failures, both with auto parsing and when specifing column parsing in function
 # citibike_import("https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip"),
 # citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
 
@@ -62,128 +62,128 @@ citibike_tidy =
 
 * Most popular/used beginning station (and least)
 
-```{r Station IDs}
-# Top 10 used starting stations in Jan dataset
+```{r Starting Stations}
 
-# Top 10 used beginning stations in all dataset (Jan)
+# Top 10 starting stations in the month of January
 
 citibike_tidy %>% 
-  filter(start_month == "01") %>% 
+  filter(start_month == "January") %>% 
   group_by(start_station_id, start_station_name) %>% 
   summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(10, n) %>% 
   arrange(desc(n)) %>% 
-  filter(n > 3990) %>% 
-  knitr::kable()
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Number of times used" = n) %>% 
+  knitr::kable(align = "c")
 
-
-#Bad plot
-citibike_tidy %>% 
-  filter(start_month == "01") %>% 
-  group_by(start_station_id) %>% 
-  summarize(n = n()) %>% 
-  filter(n > 3000) %>% 
-  ggplot(aes(x = start_station_id, y = n)) +
-  geom_point(alpha = 0.3) 
-
-  
-# Top 10 used starting stations in March dataset
-
-# Top 10 used beginning stations in all dataset (March)
-
+# Top 10 starting stations in the month of March
 
 citibike_tidy %>% 
-  filter(start_month == "03") %>% 
+  filter(start_month == "March") %>% 
   group_by(start_station_id, start_station_name) %>% 
   summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(10, n) %>% 
   arrange(desc(n)) %>% 
-  filter(n > 4300) %>% 
-  knitr::kable()
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Number of times used" = n) %>% 
+  knitr::kable(align = "c")
 
 
-# Bottom 10 used starting stations in Jan dataset 
+# Bottom 10 starting stations in the month of January
 
-# Bottom 10 used beginning stations in all dataset (Jan)
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-10, n) %>% 
+  arrange(n) %>% 
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Number of times used" = n) %>% 
+  knitr::kable(align = "c")
+
+# Bottom 10 starting stations in the month of March
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-10, n) %>% 
+  arrange(n) %>% 
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Number of times used" = n) %>% 
+  knitr::kable(align = "c")
 
 # Remove NYCBS Depots? 
-
-citibike_tidy %>% 
-  filter(start_month == "01") %>% 
-  group_by(start_station_id, start_station_name) %>% 
-  summarize(n = n()) %>% 
-  arrange(n) %>% 
-  filter(n < 60) %>% 
-  knitr::kable()
-
-# Bottom 10 used starting stations in March dataset
-
-# Bottom 10 used beginning stations in all dataset (March)
-
-# Remove NYCBS Depots? 
-
-citibike_tidy %>% 
-  filter(start_month == "03") %>% 
-  group_by(start_station_id, start_station_name) %>% 
-  summarize(n = n()) %>% 
-  arrange(n) %>% 
-  filter(n < 40) %>% 
-  knitr::kable()
 
 ```
 
 
 * Most popular/used ending station (and least)
-```{r end_stat_ids}
-# Top 10 used end stations in all dataset (Jan)
+```{r Ending Stations}
+# Top 10 terminal stations in the month of January
 
 citibike_tidy %>% 
-  filter(start_month == "01") %>% 
+  filter(start_month == "January") %>% 
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
   top_n(10, n) %>% 
-  knitr::kable()
+  arrange(desc(n)) %>% 
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Number of times used" = n) %>% 
+  knitr::kable(align = "c")
 
-# Top 10 used end stations in all dataset (March)
+# Top 10 terminal stations in the month of March
 
 citibike_tidy %>% 
-  filter(start_month == "03") %>% 
+  filter(start_month == "March") %>% 
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
   top_n(10, n) %>% 
-  knitr::kable()
+  arrange(desc(n)) %>% 
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Number of times used" = n) %>% 
+  knitr::kable(align = "c")
 
-# Bottom 10 used end stations in all dataset (Jan)
+# Bottom 10 terminal stations in the month of January
 
 citibike_tidy %>% 
-  filter(start_month == "01") %>% 
+  filter(start_month == "January") %>% 
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
   top_n(-10, n) %>% 
-  knitr::kable()
+  arrange(n) %>% 
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Number of times used" = n) %>% 
+  knitr::kable(align = "c")
 
-# Bottom 10 used end stations in all dataset (March)
+# Bottom 10 terminal stations in the month of March
 
 citibike_tidy %>% 
-  filter(start_month == "03") %>% 
+  filter(start_month == "March") %>% 
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
   top_n(-10, n) %>% 
-  knitr::kable()
+  arrange(n) %>% 
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Number of times used" = n) %>% 
+  knitr::kable(align = "c")
 ```
-
-```{r}
-citibike_tidy %>% 
-  filter(start_month == "03") %>% 
-  group_by(end_station_id, end_station_name) %>% 
-  summarize(n = n()) %>% 
-  ungroup() %>% 
-  top_n(10, n) %>% 
-  knitr::kable()
-```
-
 
 * Mapping the above (like airbnb from class)
 * ERIC!!! *
