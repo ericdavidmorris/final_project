@@ -201,15 +201,13 @@ citibike_tidy %>%
   summarize(n = n()) %>% 
   mutate(text_label = str_c("Station name: ", start_station_name, '\n# of trips started at this station: ', n)) %>% 
   plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
-          alpha = 0.3,
+          alpha = 0.5,
           color = ~n,
           text = ~text_label)
 
-##ggplot of above
-
 ## map of nyc based on lat/long, overlay ggplot on top? https://cran.r-project.org/web/packages/magick/vignettes/intro.html#combining
 
-#Jan
+#Jan ggplot of plotly above
 
 #citibike_tidy %>% 
 #  filter(start_month == "January") %>% 
@@ -221,53 +219,69 @@ citibike_tidy %>%
 #  coord_cartesian() +
 #  theme_classic()
 
-
-#March 
 citibike_tidy %>% 
   filter(start_month == "March") %>% 
-  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
+  group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
   summarize(n = n()) %>% 
-  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
-  geom_point(alpha = 0.3) + 
-  scale_color_viridis() +
-  coord_cartesian() +
-  theme_classic()
+  mutate(text_label = str_c("Station name: ", start_station_name, '\n# of trips started at this station: ', n)) %>% 
+  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label)
 
-## ggplot of end stations
-
-#Jan
-citibike_tidy %>% 
-  filter(start_month == "January") %>% 
-  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
-  summarize(n = n()) %>% 
-  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
-  geom_point(alpha = 0.3) + 
-  scale_color_viridis() +
-  coord_cartesian() +
-  theme_classic()
-
-#March
-citibike_tidy %>% 
-  filter(start_month == "March") %>% 
-  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
-  summarize(n = n()) %>% 
-  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
-  geom_point(alpha = 0.3) + 
-  scale_color_viridis() +
-  coord_cartesian() +
-  theme_classic()
-
-# least used stations plotly 
+#March ggplot of plotly above
 
 #citibike_tidy %>% 
-#  filter(start_month == "01") %>% 
-#  group_by(start_station_name, start_station_latitude, start_station_longitude) %>%  
+#  filter(start_month == "March") %>% 
+#  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
 #  summarize(n = n()) %>% 
-#  arrange(n) %>% 
-#  filter(n < 500) %>% 
-#  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
-#          alpha = 0.3, 
-#          color = ~n)
+#  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
+#  geom_point(alpha = 0.3) + 
+#  scale_color_viridis() +
+#  coord_cartesian() +
+#  theme_classic()
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips ended at this station: ', n)) %>% 
+  plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label)
+
+#Jan ggplot of plotly above
+#citibike_tidy %>% 
+#  filter(start_month == "January") %>% 
+#  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
+#  summarize(n = n()) %>% 
+#  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
+#  geom_point(alpha = 0.3) + 
+#  scale_color_viridis() +
+#  coord_cartesian() +
+#  theme_classic()
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips ended at this station: ', n)) %>% 
+  plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label)
+
+#March ggplot of plotly above
+#citibike_tidy %>% 
+#  filter(start_month == "March") %>% 
+#  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
+#  summarize(n = n()) %>% 
+#  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
+#  geom_point(alpha = 0.3) + 
+#  scale_color_viridis() +
+#  coord_cartesian() +
+#  theme_classic()
 ```
 
 
@@ -308,25 +322,6 @@ lm(trip_duration ~ rider_age + gender + overnight + morning + afternoon + night,
    data = citibike_tidy) %>% 
   broom::tidy()
 ```
-
-* Map of where people start
-```{r map_start_plot}
-# this looks pretty dumb; is it a scale issue?
-citibike_tidy %>% 
-  filter(start_station_longitude != 0) %>% 
-  ggplot(aes(x = start_station_longitude, y = start_station_latitude)) + 
-  geom_point()
-```
-
-
-* Map of where people end (kind of philosophical, no?)
-```{r map_end_plot}
-citibike_tidy %>% 
-  filter(end_station_longitude != 0) %>% 
-  ggplot(aes(x = end_station_longitude, y = end_station_latitude)) + 
-  geom_point()
-```
-
 
 * Length of ride against day of month, by month
 ```{r trip_length_plot}
