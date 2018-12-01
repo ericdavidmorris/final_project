@@ -39,11 +39,18 @@ citibike_import = function(file) {
            start_month = ifelse(start_month == "01", "January", "March"),
            stop_month = ifelse(start_month == "01", "January", "March"),
            trip_minutes = (trip_duration / 60),
-           rider_age = (2017 - birth_year)) %>% 
+           rider_age = (2017 - birth_year),
+           start_hour = as.numeric(str_sub(start_time, 0, 2)),
+           overnight = ifelse(start_hour < 06 & start_hour >= 00, 1, 0),
+           morning = ifelse(start_hour < 12 & start_hour >= 06, 1, 0),
+           afternoon = ifelse(start_hour < 18 & start_hour >= 12, 1, 0),
+           night = ifelse(start_hour <= 24 & start_hour >= 18, 1, 0)) %>% 
     filter(user_type == "subscriber",
            trip_minutes > 5,
-           trip_minutes <= 45)
-    
+           trip_minutes <= 45,
+           !start_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           rider_age < 100)
+  
   df
   
 }
@@ -188,6 +195,7 @@ citibike_tidy %>%
 * Mapping the above (like airbnb from class)
 * ERIC!!! *
 
+
 ```{r Plotly}
 
 # citibike_tidy %>% 
@@ -299,6 +307,19 @@ citibike_tidy %>%
 
 * Simple linear regression of trip duration vs. age, sex, time of day (categorical: morning rush hour, morning, evening rush hour), day of week
 
+```{r}
+# exploring a model for predicting trip duration
+
+first_model = 
+  citibike_tidy %>% 
+  lm(trip_duration ~ rider_age + gender + overnight + morning + afternoon + night)
+
+first_model %>% 
+  broom::tidy()
+
+
+```
+
 * Map of where people start
 ```{r map_start_plot}
 # this looks pretty dumb; is it a scale issue?
@@ -336,5 +357,3 @@ citibike_tidy %>%
     facet_grid(~ start_month)
 ```
 
-
-*ongoing data questions: do we need both trip_duration and trip_minutes?
