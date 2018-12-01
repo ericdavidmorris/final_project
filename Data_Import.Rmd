@@ -35,7 +35,7 @@ citibike_import = function(file) {
     separate(start_date, into = c("start_year", "start_month", "start_day"), sep = "-") %>% 
     separate(stop_date, into = c("stop_year", "stop_month", "stop_day"), sep = "-") %>% 
     mutate(user_type = tolower(user_type),
-           gender = as.factor(gender),
+           gender = as.factor(gender - 1),
            start_month = ifelse(start_month == "01", "January", "March"),
            stop_month = ifelse(start_month == "01", "January", "March"),
            trip_minutes = (trip_duration / 60),
@@ -49,6 +49,7 @@ citibike_import = function(file) {
            trip_minutes > 5,
            trip_minutes <= 45,
            !start_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           gender != -1,
            rider_age < 100)
   
   df
@@ -280,7 +281,6 @@ citibike_tidy %>%
 # Histogram of when people start their rides, by gender!
 citibike_tidy %>% 
   group_by(gender) %>% 
-  filter(gender != 0) %>% 
   mutate(start_hour = str_sub(start_time, 0, 2),
          start_hour = as.numeric(start_hour)) %>% 
   ggplot(aes(x = start_hour)) +
@@ -295,7 +295,6 @@ citibike_tidy %>%
 ```{r age_length_plot}
 # who are the people over 100; also, this is kind of ug the way i have done it; whose trips are more than 500 hours??????? how is this calculated??
 citibike_tidy %>% 
-  filter(gender != 0) %>% 
   mutate(trip_hour = trip_minutes / 60) %>% 
   ggplot(aes(x = rider_age, y = trip_hour)) + 
   geom_point(alpha = 0.5) +
@@ -310,14 +309,9 @@ citibike_tidy %>%
 ```{r}
 # exploring a model for predicting trip duration
 
-first_model = 
-  citibike_tidy %>% 
-  lm(trip_duration ~ rider_age + gender + overnight + morning + afternoon + night)
-
-first_model %>% 
+lm(trip_duration ~ rider_age + gender + overnight + morning + afternoon + night, 
+   data = citibike_tidy) %>% 
   broom::tidy()
-
-
 ```
 
 * Map of where people start
