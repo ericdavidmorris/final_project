@@ -14,6 +14,13 @@ output: html_document
 
 Since its launch in 2013, [Citi Bike]("https://www.citibikenyc.com/") has proved to be a popular and essential addition to the New York City transportation network. As of late 2017, the Citi Bike program reports 12,000 bikes and 750 stations in use across 60 NYC neighborhoods. The program continues to expand to new locations across the city each year and provides a valuable, environmentally-friendly, and cost-effective alternative form of transportation to New Yorkers. 
 
+Lyft, the ride-share company, [announced](https://www.theverge.com/2018/7/2/17526892/lyft-buys-motivate-bike-sharing-expansion) its plans to purchase Motivate (Citi Bike's parent company) in July 2018, and the acquisition was finalized this November. With the help of a five-year $100 million [investment](https://www.theverge.com/2018/11/29/18118057/citi-bike-lyft-triple-size-100-million-investment-nyc) from its new owner, Citi Bike plans to grow to 40,000 bikes and double its service area by 35 square miles. This significant expansion will turn Citi Bike into one of the largest bike-share programs in the world.
+<br/>
+
+***
+
 ## Scope of work
 
 As avid bikers and customers of Citi Bike, we wanted to explore how use of Citi Bikes vary across neighborhoods, genders, ages, and across time. We were specifically interested in how Citi Bike members -- New York local who pay either by month or by year to access unlimited 45 minute rides -- utilized the service in the beginning months (January and March) of 2017. Due to the nature of the service, we restricted our analyses to trips lasting longer than 5 minutes and shorter than 45 minutes.
+
+<!-- Initial questions: What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis? -->
