@@ -9,10 +9,9 @@ library(tidyverse)
 library(plotly)
 library(viridis)
 library(ggridges)
-library(plotly)
 library(lubridate)
 library(stringr)
-library(dplyr)
+library(kableExtra)
 ```
 
 ### Introduction 
@@ -21,10 +20,8 @@ library(dplyr)
 
 CSV zip files (corresponding to each month) of Citi Bike data for 2017 were downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html), which is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). Originally, we felt it was better to download directly from the data source for reproducibility purposes, however, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips vary from 25-70 MB). We decided to download the zips of two months of interest and add them to our project's data folder and import from there.
 
-```{r data_import_func}
-# Removed col names type for now and went with automatic column parsing which seemed to work  well
-
-# Need to add a variable/split date so we can identify if the trip is in the January or March dataset 
+```{r Data Import Function}
+# Removed col names type for now and went with automatic column parsing
 
 citibike_import = function(file) {
   
@@ -35,15 +32,24 @@ citibike_import = function(file) {
     separate(start_date, into = c("start_year", "start_month", "start_day"), sep = "-") %>% 
     separate(stop_date, into = c("stop_year", "stop_month", "stop_day"), sep = "-") %>% 
     mutate(user_type = tolower(user_type),
-           gender = as.factor(gender),
+           gender = as.factor(gender - 1),
            start_month = ifelse(start_month == "01", "January", "March"),
            stop_month = ifelse(start_month == "01", "January", "March"),
            trip_minutes = (trip_duration / 60),
-           rider_age = (2017 - birth_year)) %>% 
+           rider_age = (2017 - birth_year),
+           start_hour = as.numeric(str_sub(start_time, 0, 2)),
+           overnight = ifelse(start_hour < 06 & start_hour >= 00, 1, 0),
+           morning = ifelse(start_hour < 12 & start_hour >= 06, 1, 0),
+           afternoon = ifelse(start_hour < 18 & start_hour >= 12, 1, 0),
+           night = ifelse(start_hour <= 24 & start_hour >= 18, 1, 0)) %>% 
     filter(user_type == "subscriber",
            trip_minutes > 5,
-           trip_minutes <= 45)
-    
+           trip_minutes <= 45,
+           !start_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "NYCBS Depot BAL - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           !end_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "NYCBS Depot BAL - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           gender != -1,
+           rider_age < 100)
+  
   df
   
 }
@@ -62,7 +68,7 @@ citibike_tidy =
 
 * Most popular/used beginning station (and least)
 
-```{r Starting Stations}
+```{r Starting Station Kables}
 
 # Top 10 starting stations in the month of January
 
@@ -76,7 +82,8 @@ citibike_tidy %>%
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
          "Number of times used" = n) %>% 
-  knitr::kable(align = "c")
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
 # Top 10 starting stations in the month of March
 
@@ -90,8 +97,8 @@ citibike_tidy %>%
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
          "Number of times used" = n) %>% 
-  knitr::kable(align = "c")
-
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"))
 
 # Bottom 10 starting stations in the month of January
 
@@ -121,13 +128,11 @@ citibike_tidy %>%
          "Number of times used" = n) %>% 
   knitr::kable(align = "c")
 
-# Remove NYCBS Depots? 
-
 ```
 
-
 * Most popular/used ending station (and least)
-```{r Ending Stations}
+
+```{r Ending Station Kables}
 # Top 10 terminal stations in the month of January
 
 citibike_tidy %>% 
@@ -190,89 +195,104 @@ citibike_tidy %>%
 
 ```{r Plotly}
 
-# citibike_tidy %>% 
-#  filter(start_month == "01") %>% 
-#  group_by(start_station_id, start_station_name, start_station_latitude, start_station_longitude) %>% 
-#  summarize(n = n()) %>% 
-#  filter(n > 1000) %>% 
-#  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
-#          alpha = 0.3, 
-#          color = ~n)
+#plotly works nicely now
 
-##ggplot of above
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", start_station_name, '\n# of trips started at this station: ', n)) %>% 
+  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label)
 
 ## map of nyc based on lat/long, overlay ggplot on top? https://cran.r-project.org/web/packages/magick/vignettes/intro.html#combining
 
-#Jan
-citibike_tidy %>% 
-  filter(start_month == "January") %>% 
-  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
-  summarize(n = n()) %>% 
-  filter(n > 100) %>% 
-  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
-  geom_point(alpha = 0.3) + 
-  scale_color_viridis() +
-  coord_cartesian() +
-  theme_classic()
-
-#March 
-citibike_tidy %>% 
-  filter(start_month == "March") %>% 
-  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
-  summarize(n = n()) %>% 
-  filter(n > 100) %>% 
-  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
-  geom_point(alpha = 0.3) + 
-  scale_color_viridis() +
-  coord_cartesian() +
-  theme_classic()
-
-## ggplot of end stations
-
-#Jan
-citibike_tidy %>% 
-  filter(start_month == "January") %>% 
-  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
-  summarize(n = n()) %>% 
-  filter(n > 100) %>% 
-  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
-  geom_point(alpha = 0.3) + 
-  scale_color_viridis() +
-  coord_cartesian() +
-  theme_classic()
-
-#March
-citibike_tidy %>% 
-  filter(start_month == "March") %>% 
-  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
-  summarize(n = n()) %>% 
-  filter(n > 100) %>% 
-  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
-  geom_point(alpha = 0.3) + 
-  scale_color_viridis() +
-  coord_cartesian() +
-  theme_classic()
-
-# least used stations plotly 
+#Jan ggplot of plotly above
 
 #citibike_tidy %>% 
-#  filter(start_month == "01") %>% 
-#  group_by(start_station_name, start_station_latitude, start_station_longitude) %>%  
+#  filter(start_month == "January") %>% 
+#  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
 #  summarize(n = n()) %>% 
-#  arrange(n) %>% 
-#  filter(n < 500) %>% 
-#  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
-#          alpha = 0.3, 
-#          color = ~n)
+#  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
+#  geom_point(alpha = 0.3) + 
+#  scale_color_viridis() +
+#  coord_cartesian() +
+#  theme_classic()
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", start_station_name, '\n# of trips started at this station: ', n)) %>% 
+  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label)
+
+#March ggplot of plotly above
+
+#citibike_tidy %>% 
+#  filter(start_month == "March") %>% 
+#  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
+#  summarize(n = n()) %>% 
+#  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
+#  geom_point(alpha = 0.3) + 
+#  scale_color_viridis() +
+#  coord_cartesian() +
+#  theme_classic()
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips ended at this station: ', n)) %>% 
+  plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label)
+
+#Jan ggplot of plotly above
+#citibike_tidy %>% 
+#  filter(start_month == "January") %>% 
+#  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
+#  summarize(n = n()) %>% 
+#  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
+#  geom_point(alpha = 0.3) + 
+#  scale_color_viridis() +
+#  coord_cartesian() +
+#  theme_classic()
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips ended at this station: ', n)) %>% 
+  plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label)
+
+#March ggplot of plotly above
+#citibike_tidy %>% 
+#  filter(start_month == "March") %>% 
+#  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
+#  summarize(n = n()) %>% 
+#  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
+#  geom_point(alpha = 0.3) + 
+#  scale_color_viridis() +
+#  coord_cartesian() +
+#  theme_classic()
 ```
 
 
 * Men v. Women (1 = Male, 2 = Female)
+
 ```{r gender}
 # Histogram of when people start their rides, by gender!
 citibike_tidy %>% 
   group_by(gender) %>% 
-  filter(gender != 0) %>% 
   mutate(start_hour = str_sub(start_time, 0, 2),
          start_hour = as.numeric(start_hour)) %>% 
   ggplot(aes(x = start_hour)) +
@@ -282,12 +302,11 @@ citibike_tidy %>%
   facet_grid(~ gender)
 ```
 
-
 * Age ranges and average time spent on ride
+
 ```{r age_length_plot}
 # who are the people over 100; also, this is kind of ug the way i have done it; whose trips are more than 500 hours??????? how is this calculated??
 citibike_tidy %>% 
-  filter(gender != 0) %>% 
   mutate(trip_hour = trip_minutes / 60) %>% 
   ggplot(aes(x = rider_age, y = trip_hour)) + 
   geom_point(alpha = 0.5) +
@@ -299,26 +318,16 @@ citibike_tidy %>%
 
 * Simple linear regression of trip duration vs. age, sex, time of day (categorical: morning rush hour, morning, evening rush hour), day of week
 
-* Map of where people start
-```{r map_start_plot}
-# this looks pretty dumb; is it a scale issue?
-citibike_tidy %>% 
-  filter(start_station_longitude != 0) %>% 
-  ggplot(aes(x = start_station_longitude, y = start_station_latitude)) + 
-  geom_point()
+```{r}
+# exploring a model for predicting trip duration
+
+lm(trip_duration ~ rider_age + gender + overnight + morning + afternoon + night, 
+   data = citibike_tidy) %>% 
+  broom::tidy()
 ```
-
-
-* Map of where people end (kind of philosophical, no?)
-```{r map_end_plot}
-citibike_tidy %>% 
-  filter(end_station_longitude != 0) %>% 
-  ggplot(aes(x = end_station_longitude, y = end_station_latitude)) + 
-  geom_point()
-```
-
 
 * Length of ride against day of month, by month
+
 ```{r trip_length_plot}
 # Histogram of how long people ride for, by month!
 # can we change the month labels??
@@ -336,5 +345,3 @@ citibike_tidy %>%
     facet_grid(~ start_month)
 ```
 
-
-*ongoing data questions: do we need both trip_duration and trip_minutes?
