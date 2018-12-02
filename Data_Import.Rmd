@@ -14,9 +14,10 @@ library(stringr)
 library(kableExtra)
 ```
 
-### Introduction 
+## Introduction 
 
-## *Data Import*
+
+## Data Import
 
 CSV zip files (corresponding to each month) of Citi Bike data for 2017 were downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html), which is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). Originally, we felt it was better to download directly from the data source for reproducibility purposes, however, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips vary from 25-70 MB). We decided to download the zips of two months of interest and add them to our project's data folder and import from there.
 
@@ -64,9 +65,10 @@ citibike_tidy =
 
 ```
 
-## Research Questions of Interest:
 
-* Most popular/used beginning station (and least)
+## Research Questions of Interest
+
+### Most popular/used beginning station (and least)
 
 ```{r Starting Station Kables}
 
@@ -79,9 +81,10 @@ citibike_tidy %>%
   ungroup() %>% 
   top_n(10, n) %>% 
   arrange(desc(n)) %>% 
+  mutate(n = format(n, big.mark=",")) %>%
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
-         "Number of times used" = n) %>% 
+         "Times used in January 2018 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
@@ -93,12 +96,13 @@ citibike_tidy %>%
   summarize(n = n()) %>% 
   ungroup() %>% 
   top_n(10, n) %>% 
-  arrange(desc(n)) %>% 
+  arrange(desc(n)) %>%
+  mutate(n = format(n, big.mark=",")) %>%
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
-         "Number of times used" = n) %>% 
+         "Times used in March 2018 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
-  kable_styling(bootstrap_options = c("striped", "hover"))
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
 # Bottom 10 starting stations in the month of January
 
@@ -111,8 +115,9 @@ citibike_tidy %>%
   arrange(n) %>% 
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
-         "Number of times used" = n) %>% 
-  knitr::kable(align = "c")
+         "Times used in January 2018 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
 # Bottom 10 starting stations in the month of March
 
@@ -125,12 +130,13 @@ citibike_tidy %>%
   arrange(n) %>% 
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
-         "Number of times used" = n) %>% 
-  knitr::kable(align = "c")
-
+         "Times used in March 2018 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 ```
 
-* Most popular/used ending station (and least)
+
+### Most popular/used ending station (and least)
 
 ```{r Ending Station Kables}
 # Top 10 terminal stations in the month of January
@@ -142,10 +148,12 @@ citibike_tidy %>%
   ungroup() %>% 
   top_n(10, n) %>% 
   arrange(desc(n)) %>% 
+  mutate(n = format(n, big.mark=",")) %>%
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
-         "Number of times used" = n) %>% 
-  knitr::kable(align = "c")
+         "Times used in January 2018 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
 # Top 10 terminal stations in the month of March
 
@@ -156,10 +164,12 @@ citibike_tidy %>%
   ungroup() %>% 
   top_n(10, n) %>% 
   arrange(desc(n)) %>% 
+  mutate(n = format(n, big.mark=",")) %>%
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
-         "Number of times used" = n) %>% 
-  knitr::kable(align = "c")
+         "Times used in March 2018 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
 # Bottom 10 terminal stations in the month of January
 
@@ -172,8 +182,9 @@ citibike_tidy %>%
   arrange(n) %>% 
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
-         "Number of times used" = n) %>% 
-  knitr::kable(align = "c")
+         "Times used in January 2018 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
 # Bottom 10 terminal stations in the month of March
 
@@ -186,12 +197,15 @@ citibike_tidy %>%
   arrange(n) %>% 
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
-         "Number of times used" = n) %>% 
-  knitr::kable(align = "c")
+         "Times used in March 2018 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 ```
 
-* Mapping the above (like airbnb from class)
+
+### Mapping the above (like airbnb from class)
 * ERIC!!! *
+* Maybe we could move this over to the Visualizations page? - Grace*
 
 ```{r Plotly}
 
@@ -287,7 +301,7 @@ citibike_tidy %>%
 ```
 
 
-* Men v. Women (1 = Male, 2 = Female)
+* Trips by gender (1 = Male, 2 = Female)
 
 ```{r gender}
 # Histogram of when people start their rides, by gender!
@@ -306,6 +320,7 @@ citibike_tidy %>%
 
 ```{r age_length_plot}
 # who are the people over 100; also, this is kind of ug the way i have done it; whose trips are more than 500 hours??????? how is this calculated??
+# Will definitely need to look into how some of these indicators are measured/calculated... This plot is pretty useless as is.
 citibike_tidy %>% 
   mutate(trip_hour = trip_minutes / 60) %>% 
   ggplot(aes(x = rider_age, y = trip_hour)) + 
