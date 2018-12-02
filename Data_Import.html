@@ -11,7 +11,11 @@
 
 
 
+<<<<<<< HEAD
 <title></title>
+=======
+<title>Data Import and Exploration</title>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -22,6 +26,12 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<<<<<<< HEAD
+=======
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -265,16 +275,30 @@ $(document).ready(function () {
 
 
 
+<<<<<<< HEAD
+=======
+<h1 class="title toc-ignore">Data Import and Exploration</h1>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 
 </div>
 
 
+<<<<<<< HEAD
 <div id="data-import" class="section level1">
 <h1>Data Import</h1>
 <div id="data-import-1" class="section level2">
 <h2>Data Import</h2>
 <p>CSV zip files (corresponding to each month) of Citi Bike data for 2017 were downloaded from <a href="https://s3.amazonaws.com/tripdata/index.html">the company’s system data website</a>. Originally, we felt it was better to download directly from the data source for reproducibility purposes. However, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips of 25-70 MB). We decided to download the zips of two months and add them to our project’s data folder. The data is provided according to the <a href="https://www.citibikenyc.com/data-sharing-policy">NYCBS Data Use Policy</a>.</p>
 <pre class="r"><code># removed col names type for now and went with automatic column parsing which seemed to work  well
+=======
+<div id="introduction" class="section level3">
+<h3>Introduction</h3>
+</div>
+<div id="data-import" class="section level2">
+<h2><em>Data Import</em></h2>
+<p>CSV zip files (corresponding to each month) of Citi Bike data for 2017 were downloaded from <a href="https://s3.amazonaws.com/tripdata/index.html">the company’s system data website</a>, which is provided according to the <a href="https://www.citibikenyc.com/data-sharing-policy">NYCBS Data Use Policy</a>. Originally, we felt it was better to download directly from the data source for reproducibility purposes, however, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips vary from 25-70 MB). We decided to download the zips of two months of interest and add them to our project’s data folder and import from there.</p>
+<pre class="r"><code># Removed col names type for now and went with automatic column parsing which seemed to work  well
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 
 # Need to add a variable/split date so we can identify if the trip is in the January or March dataset 
 
@@ -287,8 +311,19 @@ citibike_import = function(file) {
     separate(start_date, into = c(&quot;start_year&quot;, &quot;start_month&quot;, &quot;start_day&quot;), sep = &quot;-&quot;) %&gt;% 
     separate(stop_date, into = c(&quot;stop_year&quot;, &quot;stop_month&quot;, &quot;stop_day&quot;), sep = &quot;-&quot;) %&gt;% 
     mutate(user_type = tolower(user_type),
+<<<<<<< HEAD
            trip_minutes = (trip_duration / 60),
            rider_age = (2017 - birth_year))
+=======
+           gender = as.factor(gender),
+           start_month = ifelse(start_month == &quot;01&quot;, &quot;January&quot;, &quot;March&quot;),
+           stop_month = ifelse(start_month == &quot;01&quot;, &quot;January&quot;, &quot;March&quot;),
+           trip_minutes = (trip_duration / 60),
+           rider_age = (2017 - birth_year)) %&gt;% 
+    filter(user_type == &quot;subscriber&quot;,
+           trip_minutes &gt; 5,
+           trip_minutes &lt;= 45)
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
     
   df
   
@@ -333,6 +368,7 @@ citibike_tidy =
 ##   `Birth Year` = col_integer(),
 ##   Gender = col_integer()
 ## )</code></pre>
+<<<<<<< HEAD
 <pre class="r"><code># Reading the data directly from website doesn&#39;t work - thousands of parsing failures, even with auto parsing and when specifing column parsing in function
 # citibike_import(&quot;https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip&quot;),
 # citibike_import(&quot;https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip&quot;))</code></pre>
@@ -355,10 +391,40 @@ citibike_tidy %&gt;%
 <th align="right">start_station_id</th>
 <th align="left">start_station_name</th>
 <th align="right">n</th>
+=======
+<pre class="r"><code># Reading the data directly from website doesn&#39;t work - thousands of parsing failures, both with auto parsing and when specifing column parsing in function
+# citibike_import(&quot;https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip&quot;),
+# citibike_import(&quot;https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip&quot;))</code></pre>
+</div>
+<div id="research-questions-of-interest" class="section level2">
+<h2>Research Questions of Interest:</h2>
+<ul>
+<li>Most popular/used beginning station (and least)</li>
+</ul>
+<pre class="r"><code># Top 10 starting stations in the month of January
+
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;January&quot;) %&gt;% 
+  group_by(start_station_id, start_station_name) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  ungroup() %&gt;% 
+  top_n(10, n) %&gt;% 
+  arrange(desc(n)) %&gt;% 
+  select(-start_station_id) %&gt;% 
+  rename(&quot;Starting CitiBike Station (Address)&quot; = start_station_name,
+         &quot;Number of times used&quot; = n) %&gt;% 
+  knitr::kable(align = &quot;c&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Starting CitiBike Station (Address)</th>
+<th align="center">Number of times used</th>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<<<<<<< HEAD
 <td align="right">519</td>
 <td align="left">Pershing Square North</td>
 <td align="right">8795</td>
@@ -425,10 +491,72 @@ citibike_tidy %&gt;%
 <th align="right">start_station_id</th>
 <th align="left">start_station_name</th>
 <th align="right">n</th>
+=======
+<td align="center">Pershing Square North</td>
+<td align="center">7784</td>
+</tr>
+<tr class="even">
+<td align="center">8 Ave &amp; W 33 St</td>
+<td align="center">4080</td>
+</tr>
+<tr class="odd">
+<td align="center">W 21 St &amp; 6 Ave</td>
+<td align="center">4059</td>
+</tr>
+<tr class="even">
+<td align="center">E 17 St &amp; Broadway</td>
+<td align="center">3949</td>
+</tr>
+<tr class="odd">
+<td align="center">Broadway &amp; E 22 St</td>
+<td align="center">3841</td>
+</tr>
+<tr class="even">
+<td align="center">W 41 St &amp; 8 Ave</td>
+<td align="center">3802</td>
+</tr>
+<tr class="odd">
+<td align="center">W 31 St &amp; 7 Ave</td>
+<td align="center">3540</td>
+</tr>
+<tr class="even">
+<td align="center">W 38 St &amp; 8 Ave</td>
+<td align="center">3482</td>
+</tr>
+<tr class="odd">
+<td align="center">W 20 St &amp; 11 Ave</td>
+<td align="center">3351</td>
+</tr>
+<tr class="even">
+<td align="center">8 Ave &amp; W 31 St</td>
+<td align="center">3326</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Top 10 starting stations in the month of March
+
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;March&quot;) %&gt;% 
+  group_by(start_station_id, start_station_name) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  ungroup() %&gt;% 
+  top_n(10, n) %&gt;% 
+  arrange(desc(n)) %&gt;% 
+  select(-start_station_id) %&gt;% 
+  rename(&quot;Starting CitiBike Station (Address)&quot; = start_station_name,
+         &quot;Number of times used&quot; = n) %&gt;% 
+  knitr::kable(align = &quot;c&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Starting CitiBike Station (Address)</th>
+<th align="center">Number of times used</th>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<<<<<<< HEAD
 <td align="right">519</td>
 <td align="left">Pershing Square North</td>
 <td align="right">9076</td>
@@ -496,10 +624,72 @@ citibike_tidy %&gt;%
 <th align="right">start_station_id</th>
 <th align="left">start_station_name</th>
 <th align="right">n</th>
+=======
+<td align="center">Pershing Square North</td>
+<td align="center">8138</td>
+</tr>
+<tr class="even">
+<td align="center">W 33 St &amp; 7 Ave</td>
+<td align="center">4578</td>
+</tr>
+<tr class="odd">
+<td align="center">E 17 St &amp; Broadway</td>
+<td align="center">4255</td>
+</tr>
+<tr class="even">
+<td align="center">Broadway &amp; E 22 St</td>
+<td align="center">4141</td>
+</tr>
+<tr class="odd">
+<td align="center">W 21 St &amp; 6 Ave</td>
+<td align="center">4009</td>
+</tr>
+<tr class="even">
+<td align="center">8 Ave &amp; W 33 St</td>
+<td align="center">3968</td>
+</tr>
+<tr class="odd">
+<td align="center">E 47 St &amp; Park Ave</td>
+<td align="center">3842</td>
+</tr>
+<tr class="even">
+<td align="center">W 41 St &amp; 8 Ave</td>
+<td align="center">3801</td>
+</tr>
+<tr class="odd">
+<td align="center">W 52 St &amp; 5 Ave</td>
+<td align="center">3800</td>
+</tr>
+<tr class="even">
+<td align="center">W 31 St &amp; 7 Ave</td>
+<td align="center">3784</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Bottom 10 starting stations in the month of January
+
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;January&quot;) %&gt;% 
+  group_by(start_station_id, start_station_name) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  ungroup() %&gt;% 
+  top_n(-10, n) %&gt;% 
+  arrange(n) %&gt;% 
+  select(-start_station_id) %&gt;% 
+  rename(&quot;Starting CitiBike Station (Address)&quot; = start_station_name,
+         &quot;Number of times used&quot; = n) %&gt;% 
+  knitr::kable(align = &quot;c&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Starting CitiBike Station (Address)</th>
+<th align="center">Number of times used</th>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<<<<<<< HEAD
 <td align="right">3036</td>
 <td align="left">8D OPS 01</td>
 <td align="right">1</td>
@@ -567,10 +757,72 @@ citibike_tidy %&gt;%
 <th align="right">start_station_id</th>
 <th align="left">start_station_name</th>
 <th align="right">n</th>
+=======
+<td align="center">NYCBS Depot - FAR</td>
+<td align="center">3</td>
+</tr>
+<tr class="even">
+<td align="center">Kiosk in a box Motivate</td>
+<td align="center">8</td>
+</tr>
+<tr class="odd">
+<td align="center">Bressler</td>
+<td align="center">10</td>
+</tr>
+<tr class="even">
+<td align="center">NYCBS Depot BAL - DYR</td>
+<td align="center">17</td>
+</tr>
+<tr class="odd">
+<td align="center">Henry St &amp; Bay St</td>
+<td align="center">21</td>
+</tr>
+<tr class="even">
+<td align="center">NYCBS Depot - STY</td>
+<td align="center">24</td>
+</tr>
+<tr class="odd">
+<td align="center">Columbia St &amp; W 9 St</td>
+<td align="center">25</td>
+</tr>
+<tr class="even">
+<td align="center">Sigourney St &amp; Columbia St</td>
+<td align="center">34</td>
+</tr>
+<tr class="odd">
+<td align="center">Clinton St &amp; Centre St</td>
+<td align="center">36</td>
+</tr>
+<tr class="even">
+<td align="center">Columbia St &amp; Lorraine St</td>
+<td align="center">38</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Bottom 10 starting stations in the month of March
+
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;March&quot;) %&gt;% 
+  group_by(start_station_id, start_station_name) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  ungroup() %&gt;% 
+  top_n(-10, n) %&gt;% 
+  arrange(n) %&gt;% 
+  select(-start_station_id) %&gt;% 
+  rename(&quot;Starting CitiBike Station (Address)&quot; = start_station_name,
+         &quot;Number of times used&quot; = n) %&gt;% 
+  knitr::kable(align = &quot;c&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Starting CitiBike Station (Address)</th>
+<th align="center">Number of times used</th>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<<<<<<< HEAD
 <td align="right">298</td>
 <td align="left">3 Ave &amp; Schermerhorn St</td>
 <td align="right">1</td>
@@ -640,10 +892,80 @@ citibike_tidy %&gt;%
 <th align="right">end_station_id</th>
 <th align="left">end_station_name</th>
 <th align="right">n</th>
+=======
+<td align="center">3 Ave &amp; Schermerhorn St</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">Bressler</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="center">SSP Tech Workshop</td>
+<td align="center">3</td>
+</tr>
+<tr class="even">
+<td align="center">NYCBS Depot BAL - DYR</td>
+<td align="center">12</td>
+</tr>
+<tr class="odd">
+<td align="center">Jackson St &amp; Leonard St</td>
+<td align="center">14</td>
+</tr>
+<tr class="even">
+<td align="center">Columbia St &amp; W 9 St</td>
+<td align="center">15</td>
+</tr>
+<tr class="odd">
+<td align="center">Columbia St &amp; Lorraine St</td>
+<td align="center">20</td>
+</tr>
+<tr class="even">
+<td align="center">10 Hudson Yards</td>
+<td align="center">21</td>
+</tr>
+<tr class="odd">
+<td align="center">Dwight St &amp; Van Dyke St</td>
+<td align="center">23</td>
+</tr>
+<tr class="even">
+<td align="center">NYCBS Depot - STY</td>
+<td align="center">25</td>
+</tr>
+<tr class="odd">
+<td align="center">Henry St &amp; Bay St</td>
+<td align="center">25</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Remove NYCBS Depots? </code></pre>
+<ul>
+<li>Most popular/used ending station (and least)</li>
+</ul>
+<pre class="r"><code># Top 10 terminal stations in the month of January
+
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;January&quot;) %&gt;% 
+  group_by(end_station_id, end_station_name) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  ungroup() %&gt;% 
+  top_n(10, n) %&gt;% 
+  arrange(desc(n)) %&gt;% 
+  select(-end_station_id) %&gt;% 
+  rename(&quot;Terminal CitiBike Station (Address)&quot; = end_station_name,
+         &quot;Number of times used&quot; = n) %&gt;% 
+  knitr::kable(align = &quot;c&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Terminal CitiBike Station (Address)</th>
+<th align="center">Number of times used</th>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<<<<<<< HEAD
 <td align="right">519</td>
 <td align="left">Pershing Square North</td>
 <td align="right">8791</td>
@@ -725,10 +1047,72 @@ citibike_tidy %&gt;%
 <th align="right">end_station_id</th>
 <th align="left">end_station_name</th>
 <th align="right">n</th>
+=======
+<td align="center">Pershing Square North</td>
+<td align="center">7850</td>
+</tr>
+<tr class="even">
+<td align="center">Broadway &amp; E 22 St</td>
+<td align="center">4781</td>
+</tr>
+<tr class="odd">
+<td align="center">E 17 St &amp; Broadway</td>
+<td align="center">4347</td>
+</tr>
+<tr class="even">
+<td align="center">W 21 St &amp; 6 Ave</td>
+<td align="center">4217</td>
+</tr>
+<tr class="odd">
+<td align="center">8 Ave &amp; W 33 St</td>
+<td align="center">4168</td>
+</tr>
+<tr class="even">
+<td align="center">W 52 St &amp; 5 Ave</td>
+<td align="center">3993</td>
+</tr>
+<tr class="odd">
+<td align="center">W 41 St &amp; 8 Ave</td>
+<td align="center">3843</td>
+</tr>
+<tr class="even">
+<td align="center">W 31 St &amp; 7 Ave</td>
+<td align="center">3632</td>
+</tr>
+<tr class="odd">
+<td align="center">W 20 St &amp; 11 Ave</td>
+<td align="center">3476</td>
+</tr>
+<tr class="even">
+<td align="center">W 38 St &amp; 8 Ave</td>
+<td align="center">3468</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Top 10 terminal stations in the month of March
+
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;March&quot;) %&gt;% 
+  group_by(end_station_id, end_station_name) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  ungroup() %&gt;% 
+  top_n(10, n) %&gt;% 
+  arrange(desc(n)) %&gt;% 
+  select(-end_station_id) %&gt;% 
+  rename(&quot;Terminal CitiBike Station (Address)&quot; = end_station_name,
+         &quot;Number of times used&quot; = n) %&gt;% 
+  knitr::kable(align = &quot;c&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Terminal CitiBike Station (Address)</th>
+<th align="center">Number of times used</th>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<<<<<<< HEAD
 <td align="right">519</td>
 <td align="left">Pershing Square North</td>
 <td align="right">9014</td>
@@ -795,10 +1179,72 @@ citibike_tidy %&gt;%
 <th align="right">end_station_id</th>
 <th align="left">end_station_name</th>
 <th align="right">n</th>
+=======
+<td align="center">Pershing Square North</td>
+<td align="center">8084</td>
+</tr>
+<tr class="even">
+<td align="center">W 33 St &amp; 7 Ave</td>
+<td align="center">5521</td>
+</tr>
+<tr class="odd">
+<td align="center">Broadway &amp; E 22 St</td>
+<td align="center">4560</td>
+</tr>
+<tr class="even">
+<td align="center">E 17 St &amp; Broadway</td>
+<td align="center">4517</td>
+</tr>
+<tr class="odd">
+<td align="center">W 21 St &amp; 6 Ave</td>
+<td align="center">4089</td>
+</tr>
+<tr class="even">
+<td align="center">W 52 St &amp; 5 Ave</td>
+<td align="center">3956</td>
+</tr>
+<tr class="odd">
+<td align="center">8 Ave &amp; W 33 St</td>
+<td align="center">3833</td>
+</tr>
+<tr class="even">
+<td align="center">W 41 St &amp; 8 Ave</td>
+<td align="center">3807</td>
+</tr>
+<tr class="odd">
+<td align="center">E 47 St &amp; Park Ave</td>
+<td align="center">3784</td>
+</tr>
+<tr class="even">
+<td align="center">W 38 St &amp; 8 Ave</td>
+<td align="center">3601</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Bottom 10 terminal stations in the month of January
+
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;January&quot;) %&gt;% 
+  group_by(end_station_id, end_station_name) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  ungroup() %&gt;% 
+  top_n(-10, n) %&gt;% 
+  arrange(n) %&gt;% 
+  select(-end_station_id) %&gt;% 
+  rename(&quot;Terminal CitiBike Station (Address)&quot; = end_station_name,
+         &quot;Number of times used&quot; = n) %&gt;% 
+  knitr::kable(align = &quot;c&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Terminal CitiBike Station (Address)</th>
+<th align="center">Number of times used</th>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<<<<<<< HEAD
 <td align="right">3036</td>
 <td align="left">8D OPS 01</td>
 <td align="right">1</td>
@@ -890,10 +1336,72 @@ citibike_tidy %&gt;%
 <th align="right">end_station_id</th>
 <th align="left">end_station_name</th>
 <th align="right">n</th>
+=======
+<td align="center">Exchange Place</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">E 71 St &amp; 1 Ave</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="center">NYCBS Depot BAL - DYR</td>
+<td align="center">7</td>
+</tr>
+<tr class="even">
+<td align="center">NYCBS Depot - FAR</td>
+<td align="center">8</td>
+</tr>
+<tr class="odd">
+<td align="center">Kiosk in a box Motivate</td>
+<td align="center">8</td>
+</tr>
+<tr class="even">
+<td align="center">Bressler</td>
+<td align="center">10</td>
+</tr>
+<tr class="odd">
+<td align="center">Columbia St &amp; W 9 St</td>
+<td align="center">21</td>
+</tr>
+<tr class="even">
+<td align="center">Henry St &amp; Bay St</td>
+<td align="center">22</td>
+</tr>
+<tr class="odd">
+<td align="center">NYCBS Depot - STY</td>
+<td align="center">25</td>
+</tr>
+<tr class="even">
+<td align="center">Henry St &amp; W 9 St</td>
+<td align="center">27</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Bottom 10 terminal stations in the month of March
+
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;March&quot;) %&gt;% 
+  group_by(end_station_id, end_station_name) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  ungroup() %&gt;% 
+  top_n(-10, n) %&gt;% 
+  arrange(n) %&gt;% 
+  select(-end_station_id) %&gt;% 
+  rename(&quot;Terminal CitiBike Station (Address)&quot; = end_station_name,
+         &quot;Number of times used&quot; = n) %&gt;% 
+  knitr::kable(align = &quot;c&quot;)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Terminal CitiBike Station (Address)</th>
+<th align="center">Number of times used</th>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<<<<<<< HEAD
 <td align="right">3214</td>
 <td align="left">Essex Light Rail</td>
 <td align="right">1</td>
@@ -962,13 +1470,134 @@ citibike_tidy %&gt;%
 <td align="right">3337</td>
 <td align="left">Dwight St &amp; Van Dyke St</td>
 <td align="right">39</td>
+=======
+<td align="center">Essex Light Rail</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">3 Ave &amp; Schermerhorn St</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="center">Bressler</td>
+<td align="center">2</td>
+</tr>
+<tr class="even">
+<td align="center">Morris Canal</td>
+<td align="center">5</td>
+</tr>
+<tr class="odd">
+<td align="center">NYCBS Depot BAL - DYR</td>
+<td align="center">7</td>
+</tr>
+<tr class="even">
+<td align="center">SSP Tech Workshop</td>
+<td align="center">8</td>
+</tr>
+<tr class="odd">
+<td align="center">Jackson St &amp; Leonard St</td>
+<td align="center">10</td>
+</tr>
+<tr class="even">
+<td align="center">Penn Station Valet - Valet Scan</td>
+<td align="center">15</td>
+</tr>
+<tr class="odd">
+<td align="center">10 Hudson Yards</td>
+<td align="center">18</td>
+</tr>
+<tr class="even">
+<td align="center">Columbia St &amp; W 9 St</td>
+<td align="center">21</td>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </tr>
 </tbody>
 </table>
 <ul>
 <li>Mapping the above (like airbnb from class)</li>
+<<<<<<< HEAD
 <li><p>ERIC!!! *</p></li>
 <li><p>Men v. Women (1 = Male, 2 = Female)</p></li>
+=======
+<li>ERIC!!! *</li>
+</ul>
+<pre class="r"><code># citibike_tidy %&gt;% 
+#  filter(start_month == &quot;01&quot;) %&gt;% 
+#  group_by(start_station_id, start_station_name, start_station_latitude, start_station_longitude) %&gt;% 
+#  summarize(n = n()) %&gt;% 
+#  filter(n &gt; 1000) %&gt;% 
+#  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = &quot;scatter&quot;, mode = &quot;markers&quot;,
+#          alpha = 0.3, 
+#          color = ~n)
+
+##ggplot of above
+
+## map of nyc based on lat/long, overlay ggplot on top? https://cran.r-project.org/web/packages/magick/vignettes/intro.html#combining
+
+#Jan
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;January&quot;) %&gt;% 
+  group_by(start_station_id, start_station_latitude, start_station_longitude) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  filter(n &gt; 100) %&gt;% 
+  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
+  geom_point(alpha = 0.3) + 
+  scale_color_viridis() +
+  coord_cartesian() +
+  theme_classic()</code></pre>
+<p><img src="Data_Import_files/figure-html/Plotly-1.png" width="672" /></p>
+<pre class="r"><code>#March 
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;March&quot;) %&gt;% 
+  group_by(start_station_id, start_station_latitude, start_station_longitude) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  filter(n &gt; 100) %&gt;% 
+  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
+  geom_point(alpha = 0.3) + 
+  scale_color_viridis() +
+  coord_cartesian() +
+  theme_classic()</code></pre>
+<p><img src="Data_Import_files/figure-html/Plotly-2.png" width="672" /></p>
+<pre class="r"><code>## ggplot of end stations
+
+#Jan
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;January&quot;) %&gt;% 
+  group_by(end_station_id, end_station_latitude, end_station_longitude) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  filter(n &gt; 100) %&gt;% 
+  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
+  geom_point(alpha = 0.3) + 
+  scale_color_viridis() +
+  coord_cartesian() +
+  theme_classic()</code></pre>
+<p><img src="Data_Import_files/figure-html/Plotly-3.png" width="672" /></p>
+<pre class="r"><code>#March
+citibike_tidy %&gt;% 
+  filter(start_month == &quot;March&quot;) %&gt;% 
+  group_by(end_station_id, end_station_latitude, end_station_longitude) %&gt;% 
+  summarize(n = n()) %&gt;% 
+  filter(n &gt; 100) %&gt;% 
+  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
+  geom_point(alpha = 0.3) + 
+  scale_color_viridis() +
+  coord_cartesian() +
+  theme_classic()</code></pre>
+<p><img src="Data_Import_files/figure-html/Plotly-4.png" width="672" /></p>
+<pre class="r"><code># least used stations plotly 
+
+#citibike_tidy %&gt;% 
+#  filter(start_month == &quot;01&quot;) %&gt;% 
+#  group_by(start_station_name, start_station_latitude, start_station_longitude) %&gt;%  
+#  summarize(n = n()) %&gt;% 
+#  arrange(n) %&gt;% 
+#  filter(n &lt; 500) %&gt;% 
+#  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = &quot;scatter&quot;, mode = &quot;markers&quot;,
+#          alpha = 0.3, 
+#          color = ~n)</code></pre>
+<ul>
+<li>Men v. Women (1 = Male, 2 = Female)</li>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 </ul>
 <pre class="r"><code># Histogram of when people start their rides, by gender!
 citibike_tidy %&gt;% 
@@ -979,6 +1608,7 @@ citibike_tidy %&gt;%
   ggplot(aes(x = start_hour)) +
   geom_histogram() +
   labs(x = &quot;Start hour&quot;,
+<<<<<<< HEAD
        y = &quot;Frequency&quot;)</code></pre>
 <pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
 <div class="figure">
@@ -1002,6 +1632,12 @@ citibike_tidy %&gt;%
 ##     train_scales: function
 ##     vars: function
 ##     super:  &lt;ggproto object: Class FacetGrid, Facet, gg&gt;</code></pre>
+=======
+       y = &quot;Frequency&quot;) +
+  facet_grid(~ gender)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="Data_Import_files/figure-html/gender-1.png" width="672" /></p>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 <ul>
 <li>Age ranges and average time spent on ride</li>
 </ul>
@@ -1013,6 +1649,7 @@ citibike_tidy %&gt;%
   geom_point(alpha = 0.5) +
   geom_smooth(se = FALSE) +
   facet_grid(~ gender)</code></pre>
+<<<<<<< HEAD
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;
 
 ## Warning: Removed 45 rows containing non-finite values (stat_smooth).
@@ -1022,6 +1659,12 @@ citibike_tidy %&gt;%
 <img src="Data_Import_files/figure-markdown_github/age_length_plot-1.png" />
 
 </div>
+=======
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<pre><code>## Warning: Removed 24 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 24 rows containing missing values (geom_point).</code></pre>
+<p><img src="Data_Import_files/figure-html/age_length_plot-1.png" width="672" /></p>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 <ul>
 <li><p>Customers (24h &amp; 3 day passes) vs. Subscribers (Annual Member)</p></li>
 <li><p>Plots of amounts of rides over time of day</p></li>
@@ -1034,10 +1677,14 @@ citibike_tidy %&gt;%
   filter(start_station_longitude != 0) %&gt;% 
   ggplot(aes(x = start_station_longitude, y = start_station_latitude)) + 
   geom_point()</code></pre>
+<<<<<<< HEAD
 <div class="figure">
 <img src="Data_Import_files/figure-markdown_github/map_start_plot-1.png" />
 
 </div>
+=======
+<p><img src="Data_Import_files/figure-html/map_start_plot-1.png" width="672" /></p>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 <ul>
 <li>Map of where people end (kind of philosophical, no?)</li>
 </ul>
@@ -1045,10 +1692,14 @@ citibike_tidy %&gt;%
   filter(end_station_longitude != 0) %&gt;% 
   ggplot(aes(x = end_station_longitude, y = end_station_latitude)) + 
   geom_point()</code></pre>
+<<<<<<< HEAD
 <div class="figure">
 <img src="Data_Import_files/figure-markdown_github/map_end_plot-1.png" />
 
 </div>
+=======
+<p><img src="Data_Import_files/figure-html/map_end_plot-1.png" width="672" /></p>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 <ul>
 <li>Length of ride against day of month, by month</li>
 </ul>
@@ -1067,6 +1718,7 @@ citibike_tidy %&gt;%
     scale_color_hue(name = &quot;Month&quot;) +
     facet_grid(~ start_month)</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<<<<<<< HEAD
 <div class="figure">
 <img src="Data_Import_files/figure-markdown_github/trip_length_plot-1.png" />
 
@@ -1074,6 +1726,11 @@ citibike_tidy %&gt;%
 <p>*ongoing data questions: do we need both trip_duration and trip_minutes?</p>
 </div>
 </div>
+=======
+<p><img src="Data_Import_files/figure-html/trip_length_plot-1.png" width="672" /></p>
+<p>*ongoing data questions: do we need both trip_duration and trip_minutes?</p>
+</div>
+>>>>>>> d7fdc39df4edada3392bb361b9edd2d0592836d6
 
 
 
