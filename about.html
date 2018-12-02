@@ -11,7 +11,7 @@
 
 
 
-<title>About</title>
+<title>About Our Project</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,9 +19,6 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
-<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
-<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
-<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -173,107 +170,6 @@ $(document).ready(function () {
 
 
 
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = false;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
-
-<style type="text/css">
-
-#TOC {
-  margin: 25px 0px 20px 0px;
-}
-@media (max-width: 768px) {
-#TOC {
-  position: relative;
-  width: 100%;
-}
-}
-
-
-.toc-content {
-  padding-left: 30px;
-  padding-right: 40px;
-}
-
-div.main-container {
-  max-width: 1200px;
-}
-
-div.tocify {
-  width: 20%;
-  max-width: 260px;
-  max-height: 85%;
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  div.tocify {
-    width: 25%;
-  }
-}
-
-@media (max-width: 767px) {
-  div.tocify {
-    width: 100%;
-    max-width: none;
-  }
-}
-
-.tocify ul, .tocify li {
-  line-height: 20px;
-}
-
-.tocify-subheader .tocify-item {
-  font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
-}
-
-.tocify .list-group-item {
-  border-radius: 0px;
-}
-
-.tocify-subheader {
-  display: inline;
-}
-.tocify-subheader .tocify-item {
-  font-size: 0.95em;
-}
-
-</style>
-
-<!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row-fluid">
-<div class="col-xs-12 col-sm-4 col-md-3">
-<div id="TOC" class="tocify">
-</div>
-</div>
-
-<div class="toc-content col-xs-12 col-sm-8 col-md-9">
-
-
 
 
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
@@ -305,7 +201,7 @@ div.tocify {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="data.html">about the data</a>
+      <a href="data_import.html">data import + exploration</a>
     </li>
     <li>
       <a href="analysis.html">analysis + findings</a>
@@ -372,24 +268,33 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">About</h1>
+<h1 class="title toc-ignore">About Our Project</h1>
 
 </div>
 
 
-<div id="project-motivation" class="section level2">
-<h2>Project motivation</h2>
+<p><br/> <img src = "images/citi_bike_bridgeLRG.png" 
+  style="width:500px; display: block; margin-left: auto; margin-right: auto"> <br/></p>
+<hr />
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
 <p>Since its launch in 2013, <a href="%22https://www.citibikenyc.com/%22">Citi Bike</a> has proved to be a popular and essential addition to the New York City transportation network. As of late 2017, the Citi Bike program reports 12,000 bikes and 750 stations in use across 60 NYC neighborhoods. The program continues to expand to new locations across the city each year and provides a valuable, environmentally-friendly, and cost-effective alternative form of transportation to New Yorkers.</p>
 </div>
-<div id="project-scope" class="section level2">
-<h2>Project scope</h2>
+<div id="scope-of-work" class="section level2">
+<h2>Scope of work</h2>
 <p>As avid bikers and customers of Citi Bike, we wanted to explore how use of Citi Bikes vary across neighborhoods, genders, ages, and across time. We were specifically interested in how Citi Bike members – New York local who pay either by month or by year to access unlimited 45 minute rides – utilized the service in the beginning months (January and March) of 2017. Due to the nature of the service, we restricted our analyses to trips lasting longer than 5 minutes and shorter than 45 minutes.</p>
 </div>
 
+&nbsp;
+<hr />
+
+<p style="text-align: center; font-size: 75%">A work by <a href="https://github.com/ericdavidmorris/">Eric Morris</a>, <a href="https://github.com/gswliu/">Grace Liu</a>, & <a href="https://github.com/tatinimalsarkar/">Tatini Mal-Sakar</a></p>
+<p style="text-align: center; font-size: 75%"><span style="color: #808080;">Data obtained from <a href="https://www.citibikenyc.com/system-data">Citi Bikes</a></span></p>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+&nbsp;
 
 
-</div>
-</div>
 
 </div>
 

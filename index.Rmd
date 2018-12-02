@@ -1,9 +1,6 @@
 ---
 title: ""
-output:
-  html_document:
-    includes:
-      after_body: footer.html
+output: html_document
 ---
 <br/><br/>
 <img src = "images/citi_bike_nyc_metro.jpg" 
@@ -32,7 +29,7 @@ Since its launch in 2013, Citi Bike has proved to be a popular and essential add
 
 <center>
 <div class="scroll">
-[<img src="images/citi_bike_bridge.png" alt="About" style="height:200px; width:200px;"/>](about.html "About")
+[<img src="images/citi_bike_rack.jpg" alt="About" style="height:200px; width:200px;"/>](about.html "About")
 [<img src="images/citi_bike_dataimport.jpg" alt="Data" style="height:200px; width:200px;"/>](data.html "Data")
 [<img src="IMAGE LINK" alt="Analysis" style="height:200px; width:200px;"/>](analysis.html "Analysis")
 [<img src="images/citi_bike_map.jpg" alt="Visualizations" style="height:200px; width:200px;"/>](visualizations.html "Visualizations")

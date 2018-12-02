@@ -9,8 +9,8 @@ navbar:
       href: about.html
     - text: "project"
       menu:
-      - text: "about the data"
-        href: data.html
+      - text: "data import + exploration"
+        href: data_import.html
       - text: "analysis + findings"
         href: analysis.html
       - text: "visualizations"
@@ -37,3 +37,5 @@ output:
     theme: journal
     highlight: textmate
     css: css/style.css
+    includes:
+      after_body: footer.html
