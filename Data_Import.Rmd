@@ -16,10 +16,11 @@ library(kableExtra)
 
 ## Introduction 
 
+Data for this project was obtained from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html), which is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). We downloaded CSV zip files of Citi Bike data for the corresponding months of interest in 2017. 
 
 ## Data Import
 
-CSV zip files (corresponding to each month) of Citi Bike data for 2017 were downloaded from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html), which is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). Originally, we felt it was better to download directly from the data source for reproducibility purposes, however, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips vary from 25-70 MB). We decided to download the zips of two months of interest and add them to our project's data folder and import from there.
+Originally, we felt it was better to download directly from the data source for reproducibility purposes, however, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips vary from 25-70 MB). As such, we decided to download the zips of two months of interest and add them to our project's data folder and import from there.
 
 ```{r Data Import Function}
 # Removed col names type for now and went with automatic column parsing
@@ -84,7 +85,7 @@ citibike_tidy %>%
   mutate(n = format(n, big.mark=",")) %>%
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
-         "Times used in January 2018 (n)" = n) %>% 
+         "Times used in January 2017 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
@@ -100,7 +101,7 @@ citibike_tidy %>%
   mutate(n = format(n, big.mark=",")) %>%
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
-         "Times used in March 2018 (n)" = n) %>% 
+         "Times used in March 2017 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
@@ -115,7 +116,7 @@ citibike_tidy %>%
   arrange(n) %>% 
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
-         "Times used in January 2018 (n)" = n) %>% 
+         "Times used in January 2017 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
@@ -130,7 +131,7 @@ citibike_tidy %>%
   arrange(n) %>% 
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
-         "Times used in March 2018 (n)" = n) %>% 
+         "Times used in March 2017 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 ```
@@ -151,7 +152,7 @@ citibike_tidy %>%
   mutate(n = format(n, big.mark=",")) %>%
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
-         "Times used in January 2018 (n)" = n) %>% 
+         "Times used in January 2017 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
@@ -167,7 +168,7 @@ citibike_tidy %>%
   mutate(n = format(n, big.mark=",")) %>%
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
-         "Times used in March 2018 (n)" = n) %>% 
+         "Times used in March 2017 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
@@ -182,7 +183,7 @@ citibike_tidy %>%
   arrange(n) %>% 
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
-         "Times used in January 2018 (n)" = n) %>% 
+         "Times used in January 2017 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
@@ -197,7 +198,7 @@ citibike_tidy %>%
   arrange(n) %>% 
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
-         "Times used in March 2018 (n)" = n) %>% 
+         "Times used in March 2017 (n)" = n) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 ```
