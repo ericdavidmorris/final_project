@@ -253,28 +253,6 @@ citibike_tidy %>%
 
 We wanted to see if our model worked better than a simpler model that only included gender and age. So we used cross-validation to test if adding time of day improved our RMSE.
 
-```{r linear_mod_cv}
-cv_bike = 
-  crossv_mc(citibike_tidy, 100)
-
-cv_bike = cv_bike %>% 
-  mutate(our_model = map(train, ~lm(trip_duration ~ rider_age + gender + morning + afternoon + night, data = .)),
-         simple_model = map(train, ~lm(trip_duration ~ rider_age + gender, data = .))) %>% 
-  mutate(rmse_our = map2_dbl(our_model, test, ~rmse(model = .x, data = .y)),
-         rmse_simple = map2_dbl(simple_model, test, ~rmse(model = .x, data = .y)))
-
-cv_bike %>% 
-  select(starts_with("rmse")) %>% 
-  gather(key = model, value = rmse) %>% 
-  mutate(model = str_replace(model, "rmse_", ""),
-         model = fct_inorder(model)) %>% 
-  ggplot(aes(x = model, y = rmse)) +
-  geom_violin() +
-  theme_bw() +
-  labs(title = "Violin plots of two linear models' RMSE",
-       x = "Model",
-       y = "RMSE")
-```
 
 
 ## Takeaways
