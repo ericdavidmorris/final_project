@@ -1,6 +1,7 @@
 ---
 title: "Visualizations"
-html_document:
+output:
+  html_document:
     toc: true
     toc_float:
       collapsed: false
@@ -59,18 +60,20 @@ citibike_tidy =
 # Reading the data directly from website doesn't work - thousands of parsing failures, both with auto parsing and when specifing column parsing in function
 # citibike_import("https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip"),
 # citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
-
 ```
 
-## Visualizations
+## Station usage
 
-### Station usage
+The following plots depict the number of trips that started from and ended at each of the current Citi Bike stations, for January and March of 2017.
 
-```{r Plotly}
+There was little difference between starting station usage in the two months. The most trips were started at `r citibike_tidy %>% filter(start_month == "January") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-n)`, with `r citibike_tidy %>% filter(start_month == "January") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-start_station_name)` trips in January and `r citibike_tidy %>% filter(start_month == "March") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-start_station_name)` trips in March.
+  
 
+```{r start stations, echo=FALSE}
 #plotly works nicely now
 
-citibike_tidy %>% 
+citibike_start_jan =
+  citibike_tidy %>% 
   filter(start_month == "January") %>% 
   group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
   summarize(n = n()) %>% 
@@ -78,7 +81,12 @@ citibike_tidy %>%
   plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
           alpha = 0.5,
           color = ~n,
-          text = ~text_label)
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Jan (n)")
 
 ## map of nyc based on lat/long, overlay ggplot on top? https://cran.r-project.org/web/packages/magick/vignettes/intro.html#combining
 
@@ -94,7 +102,8 @@ citibike_tidy %>%
 #  coord_cartesian() +
 #  theme_classic()
 
-citibike_tidy %>% 
+citibike_start_mar =
+  citibike_tidy %>% 
   filter(start_month == "March") %>% 
   group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
   summarize(n = n()) %>% 
@@ -102,7 +111,12 @@ citibike_tidy %>%
   plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
           alpha = 0.5,
           color = ~n,
-          text = ~text_label)
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Mar (n)")
 
 #March ggplot of plotly above
 
@@ -116,15 +130,38 @@ citibike_tidy %>%
 #  coord_cartesian() +
 #  theme_classic()
 
-citibike_tidy %>% 
+subplot(
+  citibike_start_jan %>% layout(showlegend = FALSE),
+  citibike_start_mar %>% layout(showlegend = FALSE),
+  margin = 0.05,
+  shareX = TRUE, shareY = TRUE
+) %>% 
+layout(
+  title = "Number of trips started at each station (2017)",
+  annotations = list(
+    list(x = 0.2 , y = 1.0, text = "January", showarrow = F, xref='paper', yref='paper'),
+    list(x = 0.8 , y = 1.0, text = "March", showarrow = F, xref='paper', yref='paper'))
+)
+```
+  
+The station where the most trips ended was also `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-n)`. In January, `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended at this station, and `r citibike_tidy %>% filter(start_month == "March") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended here in March.
+  
+```{r end stations, echo=FALSE}
+citibike_end_jan = 
+  citibike_tidy %>% 
   filter(start_month == "January") %>% 
   group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
   summarize(n = n()) %>% 
-  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips ended at this station: ', n)) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips started at this station: ', n)) %>% 
   plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
           alpha = 0.5,
           color = ~n,
-          text = ~text_label)
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Jan (n)")
 
 #Jan ggplot of plotly above
 #citibike_tidy %>% 
@@ -137,15 +174,21 @@ citibike_tidy %>%
 #  coord_cartesian() +
 #  theme_classic()
 
+citibike_end_mar = 
 citibike_tidy %>% 
   filter(start_month == "March") %>% 
   group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
   summarize(n = n()) %>% 
-  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips ended at this station: ', n)) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips started at this station: ', n)) %>% 
   plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
           alpha = 0.5,
           color = ~n,
-          text = ~text_label)
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Mar (n)")
 
 #March ggplot of plotly above
 #citibike_tidy %>% 
@@ -157,13 +200,49 @@ citibike_tidy %>%
 #  scale_color_viridis() +
 #  coord_cartesian() +
 #  theme_classic()
+
+subplot(
+  citibike_end_jan %>% layout(showlegend = FALSE),
+  citibike_end_mar %>% layout(showlegend = FALSE),
+  margin = 0.05,
+  shareX = TRUE, shareY = TRUE
+) %>% 
+layout(
+  title = "Number of trips ended at each station (2017)",
+  annotations = list(
+    list(x = 0.2 , y = 1.0, text = "January", showarrow = F, xref='paper', yref='paper'),
+    list(x = 0.8 , y = 1.0, text = "March", showarrow = F, xref='paper', yref='paper'))
+)
 ```
 
+<br/>
 
-### Trips by gender (1 = Male, 2 = Female)
+***
+
+<br/>
+  
+## Trips by gender and age
+
+#### Rider characteristics
+
+In the months analyzed, there were significantly more rides by males compared to females. There were a total of `r format(nrow(subset(citibike_tidy, gender == 0)), big.mark = ",")` rides taken by male riders and `r format(nrow(subset(citibike_tidy, gender == 1)), big.mark = ",")` rides taken by female riders.
+
+The average age of a male rider was `r round(mean(citibike_tidy$rider_age[which(citibike_tidy$gender==0)]), digits = 2)` years, and ``r round(mean(citibike_tidy$rider_age[which(citibike_tidy$gender==1)]), digits = 2)` years for female riders. The oldest male rider was `r max(citibike_tidy$rider_age[which(citibike_tidy$gender==0)])` years old, and the oldest female rider was `r max(citibike_tidy$rider_age[which(citibike_tidy$gender==1)])` years old.
+  
+```{r riders age sex, echo=FALSE}
+plot_ly(alpha = 0.6) %>%
+  add_histogram(x = ~citibike_tidy$rider_age[which(citibike_tidy$gender == 0)], name = "Male") %>%
+  add_histogram(x = ~citibike_tidy$rider_age[which(citibike_tidy$gender == 1)], name = "Female") %>%
+  layout(barmode = "overlay",
+         title = "Age of riders, by gender",
+         xaxis = list(title = "Rider age (years)"),
+         yaxis = list(title = "# riders (n)")
+    )
+```
 
 ```{r gender}
 # Histogram of when people start their rides, by gender!
+# I think this is biased since it seems like we have such fewer female riders...
 citibike_tidy %>% 
   group_by(gender) %>% 
   mutate(start_hour = str_sub(start_time, 0, 2),
@@ -175,22 +254,29 @@ citibike_tidy %>%
   facet_grid(~ gender)
 ```
 
-### Age ranges and average time spent on ride
+#### Average ride length
 
-```{r age_length_plot}
+```{r age_length_plot, include=FALSE}
 # who are the people over 100; also, this is kind of ug the way i have done it; whose trips are more than 500 hours??????? how is this calculated??
 # Will definitely need to look into how some of these indicators are measured/calculated... This plot is pretty useless as is.
-citibike_tidy %>% 
-  mutate(trip_hour = trip_minutes / 60) %>% 
-  ggplot(aes(x = rider_age, y = trip_hour)) + 
+
+citibike_tidy %>%
+  mutate(trip_hour = trip_minutes / 60) %>%
+  ggplot(aes(x = rider_age, y = trip_hour)) +
   geom_point(alpha = 0.5) +
   geom_smooth(se = FALSE) +
   facet_grid(~ gender)
 ```
 
-### Most/least popular days of the week of travel 
+<br/>
 
+***
 
+<br/>
+
+## Trips by day of the week
+
+Most/least popular days of the week of travel 
 
 * Length of ride against day of month, by month
 
