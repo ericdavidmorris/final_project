@@ -275,11 +275,6 @@ cv_citibike %>%
   gather(key = model, value = rmse) %>% 
   mutate(model = str_replace(model, "rmse_", ""),
          model = fct_inorder(model)) %>% 
-  group_by(model) %>% 
-  summarize(mean_rmse = mean(rmse)) %>% 
-  knitr::kable(align = "c") %>% 
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
-
   ggplot(aes(x = model, y = rmse)) +
   geom_violin() +
   theme_bw() +
