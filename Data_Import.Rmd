@@ -1,11 +1,6 @@
 ---
 title: "Data Import and Exploration"
-output:
-  html_document:
-    toc: true
-    toc_float:
-      collapsed: false
-      smooth_scroll: false
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
