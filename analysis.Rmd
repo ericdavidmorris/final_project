@@ -20,7 +20,7 @@ library(kableExtra)
 library(modelr)
 ```
 
-```{r Data Import Function, include=FALSE, message =FALSE}
+```{r Data Import Function, include = FALSE, message = FALSE}
 # Removed col names type for now and went with automatic column parsing
 
 citibike_import = function(file) {
@@ -34,7 +34,7 @@ citibike_import = function(file) {
     mutate(user_type = tolower(user_type),
            gender = as.factor(gender - 1),
            start_month = ifelse(start_month == "01", "January", "March"),
-           stop_month = ifelse(start_month == "01", "January", "March"),
+           stop_month = ifelse(stop_month == "01", "January", "March"),
            trip_minutes = (trip_duration / 60),
            rider_age = (2017 - birth_year),
            start_hour = as.numeric(str_sub(start_time, 0, 2)),
@@ -66,13 +66,33 @@ citibike_tidy =
 
 ## Exploratory Analysis
 
-We restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. We also eliminated all stations we thought weren't really stations, like kiosks, depots, and valets. Then, we did some exploratory analysis on which stations were the most popular to start and end at.
+We restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. We also eliminated all stations we thought weren't really stations, like kiosks, depots, and valets. Then, we did some overall exploratory analysis on demographic variables, like gender and age. Finally, we investigated which stations were the most popular to start and end at.
+
+### Demographics
+```{r Exploratory Kable}
+citibike_tidy %>% 
+  mutate(gender = ifelse(gender == 0, "Male", "Female")) %>% 
+  group_by(gender) %>% 
+  summarize(number = n(),
+            mean_age = mean(rider_age),
+            median_age = median(rider_age),
+            sd_age = sd(rider_age)) %>% 
+  rename("Gender" = gender,
+         "Number" = number,
+         "Mean Age" = mean_age,
+         "Median Age" = median_age,
+         "Standard Deviation" = sd_age) %>% 
+  knitr::kable(align = "c", digits = 2) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+```
+
 
 ### Most (and least) used starting stations
 
 ```{r Starting Station Kables}
 
-# Top 10 starting stations in the month of January
+# Top 5 starting stations in the month of January
 
 citibike_tidy %>% 
   filter(start_month == "January") %>% 
@@ -88,7 +108,7 @@ citibike_tidy %>%
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
-# Top 10 starting stations in the month of March
+# Top 5 starting stations in the month of March
 
 citibike_tidy %>% 
   filter(start_month == "March") %>% 
@@ -104,7 +124,7 @@ citibike_tidy %>%
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
-# Bottom 10 starting stations in the month of January
+# Bottom 5 starting stations in the month of January
 
 citibike_tidy %>% 
   filter(start_month == "January") %>% 
@@ -119,7 +139,7 @@ citibike_tidy %>%
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
-# Bottom 10 starting stations in the month of March
+# Bottom 5 starting stations in the month of March
 
 citibike_tidy %>% 
   filter(start_month == "March") %>% 
@@ -139,7 +159,7 @@ citibike_tidy %>%
 ### Most (and least) used terminal stations
 
 ```{r Ending Station Kables}
-# Top 10 terminal stations in the month of January
+# Top 5 terminal stations in the month of January
 
 citibike_tidy %>% 
   filter(start_month == "January") %>% 
@@ -155,7 +175,7 @@ citibike_tidy %>%
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
-# Top 10 terminal stations in the month of March
+# Top 5 terminal stations in the month of March
 
 citibike_tidy %>% 
   filter(start_month == "March") %>% 
@@ -171,7 +191,7 @@ citibike_tidy %>%
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
-# Bottom 10 terminal stations in the month of January
+# Bottom 5 terminal stations in the month of January
 
 citibike_tidy %>% 
   filter(start_month == "January") %>% 
@@ -186,7 +206,7 @@ citibike_tidy %>%
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 
-# Bottom 10 terminal stations in the month of March
+# Bottom 5 terminal stations in the month of March
 
 citibike_tidy %>% 
   filter(start_month == "March") %>% 
@@ -226,16 +246,48 @@ citibike_tidy %>%
 
 citibike_tidy %>% 
   modelr::add_residuals(fit) %>% 
-  gather(key = time, value = drop_var, morning:night) %>% 
+  gather(key = time, value = drop_var, overnight:night) %>% 
   select(-drop_var) %>% 
   ggplot(aes(x = time, y = resid)) +
   geom_violin()
-```
-
-We're going to try cross-validating and comparing to a simpler model that DOESN'T include time of day
-```{r}
 
 ```
+
+
+We're going to try cross-validating and comparing to a simpler model that DOESN'T include time of day.
+
+We wanted to see if our model worked better than a simpler model that only included gender and age. So we used cross-validation to test if adding time of day improved our RMSE.
+
+```{r Cross Validation and RMSE visualization}
+
+cv_citibike = 
+  crossv_mc(citibike_tidy, 50)
+
+cv_citibike = 
+  cv_citibike %>% 
+  mutate(our_model = map(train, ~lm(trip_duration ~ rider_age + gender + morning + afternoon + night, data = .)),
+         simple_model = map(train, ~lm(trip_duration ~ rider_age + gender, data = .x))) %>% 
+  mutate(rmse_our = map2_dbl(our_model, test, ~rmse(model = .x, data = .y)),
+         rmse_simple = map2_dbl(simple_model, test, ~rmse(model = .x, data = .y)))
+
+cv_citibike %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+  mutate(model = str_replace(model, "rmse_", ""),
+         model = fct_inorder(model)) %>% 
+  group_by(model) %>% 
+  summarize(mean_rmse = mean(rmse)) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+  ggplot(aes(x = model, y = rmse)) +
+  geom_violin() +
+  theme_bw() +
+  labs(title = "Violin plots of two linear models' RMSE",
+       x = "Model",
+       y = "RMSE")
+```
+
 
 
 ## Takeaways

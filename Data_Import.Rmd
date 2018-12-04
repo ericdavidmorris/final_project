@@ -39,7 +39,7 @@ citibike_import = function(file) {
     mutate(user_type = tolower(user_type),
            gender = as.factor(gender - 1),
            start_month = ifelse(start_month == "01", "January", "March"),
-           stop_month = ifelse(start_month == "01", "January", "March"),
+           stop_month = ifelse(stop_month == "01", "January", "March"),
            trip_minutes = (trip_duration / 60),
            rider_age = (2017 - birth_year),
            start_hour = as.numeric(str_sub(start_time, 0, 2)),

@@ -253,6 +253,7 @@ plot_ly(alpha = 0.6) %>%
 #### Length of ride against day of month
 
 ```{r trip_length_plot}
+<<<<<<< HEAD
 citibike_tidy %>% 
   mutate(start_day = as.numeric(start_day)) %>% 
   group_by(start_month, start_day) %>% 
@@ -266,6 +267,27 @@ citibike_tidy %>%
     facet_grid(~ start_month) +
     theme_minimal() +
     theme(legend.position="none")
+=======
+
+citibike_tidy %>% 
+  mutate(start_day = as.numeric(start_day)) %>% 
+  group_by(start_month, start_day) %>% 
+  mutate(mean_trip_minutes = mean(trip_minutes)) %>% 
+  ggplot(aes(x = start_day, y = mean_trip_minutes, color = start_month)) +
+  geom_point(alpha = 0.7) +
+  geom_line() +
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  scale_x_continuous(breaks = seq(1, 31, 2)) + 
+  scale_y_continuous(breaks = seq(11.25, 16, 0.25)) +
+  labs(x = "Day of the month",
+       y = "Mean length of trip (minutes)",
+       title = "Mean length of rides over the course of the month") + 
+  scale_color_hue(name = "Month") +
+  facet_grid(~ start_month)
+
+>>>>>>> ad4ff70bb9b281fea110f520066ea93dc5d4023d
 ```
 
 #### Average ride length
