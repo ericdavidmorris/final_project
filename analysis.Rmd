@@ -17,6 +17,7 @@ library(ggridges)
 library(lubridate)
 library(stringr)
 library(kableExtra)
+library(modelr)
 ```
 
 ```{r Data Import Function, include=FALSE, message =FALSE}
@@ -65,7 +66,7 @@ citibike_tidy =
 
 ## Exploratory Analysis
 
-First, we restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. 
+We restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. We also eliminated all stations we thought weren't really stations, like kiosks, depots, and valets. Then, we did some exploratory analysis on which stations were the most popular to start and end at.
 
 ### Most (and least) used starting stations
 
@@ -78,7 +79,7 @@ citibike_tidy %>%
   group_by(start_station_id, start_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
-  top_n(10, n) %>% 
+  top_n(5, n) %>% 
   arrange(desc(n)) %>% 
   mutate(n = format(n, big.mark = ",")) %>%
   select(-start_station_id) %>% 
@@ -94,7 +95,7 @@ citibike_tidy %>%
   group_by(start_station_id, start_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
-  top_n(10, n) %>% 
+  top_n(5, n) %>% 
   arrange(desc(n)) %>%
   mutate(n = format(n, big.mark = ",")) %>%
   select(-start_station_id) %>% 
@@ -110,7 +111,7 @@ citibike_tidy %>%
   group_by(start_station_id, start_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
-  top_n(-10, n) %>% 
+  top_n(-5, n) %>% 
   arrange(n) %>% 
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
@@ -125,7 +126,7 @@ citibike_tidy %>%
   group_by(start_station_id, start_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
-  top_n(-10, n) %>% 
+  top_n(-5, n) %>% 
   arrange(n) %>% 
   select(-start_station_id) %>% 
   rename("Starting CitiBike Station (Address)" = start_station_name,
@@ -145,7 +146,7 @@ citibike_tidy %>%
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
-  top_n(10, n) %>% 
+  top_n(5, n) %>% 
   arrange(desc(n)) %>% 
   mutate(n = format(n, big.mark = ",")) %>%
   select(-end_station_id) %>% 
@@ -161,7 +162,7 @@ citibike_tidy %>%
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
-  top_n(10, n) %>% 
+  top_n(5, n) %>% 
   arrange(desc(n)) %>% 
   mutate(n = format(n, big.mark = ",")) %>%
   select(-end_station_id) %>% 
@@ -177,7 +178,7 @@ citibike_tidy %>%
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
-  top_n(-10, n) %>% 
+  top_n(-5, n) %>% 
   arrange(n) %>% 
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
@@ -192,7 +193,7 @@ citibike_tidy %>%
   group_by(end_station_id, end_station_name) %>% 
   summarize(n = n()) %>% 
   ungroup() %>% 
-  top_n(-10, n) %>% 
+  top_n(-5, n) %>% 
   arrange(n) %>% 
   select(-end_station_id) %>% 
   rename("Terminal CitiBike Station (Address)" = end_station_name,
@@ -204,14 +205,37 @@ citibike_tidy %>%
 
 ## Linear regression
 
-* Simple linear regression of trip duration vs. age, sex, time of day (categorical: morning rush hour, morning, evening rush hour), day of week
+We were pretty excited to see which stations were most used in January and March. Then we got to thinking about what sort of stuff might affect trip length, like age, sex, and time of day. Time of day had us confused for a while, because we weren't convinced there was a directly linear relationship between each added hour and trip length (7 to 8am is pretty different from 1 to 2am, for instance). So we treated time of day as a categorical variable, with morning as 6am-12pm, afternoon as 12pm-6pm, and night as 5pm-12am, and the reference group as 12am-6am. 
 
-```{r}
+```{r linear_mod}
 # exploring a model for predicting trip duration
+fit = lm(trip_duration ~ rider_age + gender + morning + afternoon + night, 
+   data = citibike_tidy) 
 
-lm(trip_duration ~ rider_age + gender + overnight + morning + afternoon + night, 
-   data = citibike_tidy) %>% 
-  broom::tidy()
+fit %>% 
+  broom::tidy() %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
 ```
 
-## Findings
+```{r linear_mod_res}
+citibike_tidy %>% 
+  modelr::add_residuals(fit) %>% 
+  ggplot(aes(x = gender, y = resid)) +
+  geom_violin()
+
+citibike_tidy %>% 
+  modelr::add_residuals(fit) %>% 
+  gather(key = time, value = drop_var, morning:night) %>% 
+  select(-drop_var) %>% 
+  ggplot(aes(x = time, y = resid)) +
+  geom_violin()
+```
+
+We're going to try cross-validating and comparing to a simpler model that DOESN'T include time of day
+```{r}
+
+```
+
+
+## Takeaways
