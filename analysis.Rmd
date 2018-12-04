@@ -66,7 +66,27 @@ citibike_tidy =
 
 ## Exploratory Analysis
 
-We restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. We also eliminated all stations we thought weren't really stations, like kiosks, depots, and valets. Then, we did some exploratory analysis on which stations were the most popular to start and end at.
+We restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. We also eliminated all stations we thought weren't really stations, like kiosks, depots, and valets. Then, we did some overall exploratory analysis on demographic variables, like gender and age. Finally, we investigated which stations were the most popular to start and end at.
+
+### Demographics
+```{r Exploratory Kable}
+citibike_tidy %>% 
+  mutate(gender = ifelse(gender == 0, "Male", "Female")) %>% 
+  group_by(gender) %>% 
+  summarize(number = n(),
+            mean_age = mean(rider_age),
+            median_age = median(rider_age),
+            sd_age = sd(rider_age)) %>% 
+  rename("Gender" = gender,
+         "Number" = number,
+         "Mean Age" = mean_age,
+         "Median Age" = median_age,
+         "Standard Deviation" = sd_age) %>% 
+  knitr::kable(align = "c", digits = 2) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+```
+
 
 ### Most (and least) used starting stations
 
@@ -226,14 +246,18 @@ citibike_tidy %>%
 
 citibike_tidy %>% 
   modelr::add_residuals(fit) %>% 
-  gather(key = time, value = drop_var, morning:night) %>% 
+  gather(key = time, value = drop_var, overnight:night) %>% 
   select(-drop_var) %>% 
   ggplot(aes(x = time, y = resid)) +
   geom_violin()
 
 ```
 
-We're going to try cross-validating and comparing to a simpler model that DOESN'T include time of day
+
+We're going to try cross-validating and comparing to a simpler model that DOESN'T include time of day.
+
+We wanted to see if our model worked better than a simpler model that only included gender and age. So we used cross-validation to test if adding time of day improved our RMSE.
+
 ```{r Cross Validation and RMSE visualization}
 
 cv_citibike = 
@@ -251,22 +275,17 @@ cv_citibike %>%
   gather(key = model, value = rmse) %>% 
   mutate(model = str_replace(model, "rmse_", ""),
          model = fct_inorder(model)) %>% 
-  ggplot(aes(x = model, y = rmse)) + 
-  geom_violin() +
-  theme_bw() + 
-  labs(title = "Violin plots of two linear models' RMSE",
-       x = "Model Title",
-       y = "RMSE")
-
-cv_citibike %>% 
-  select(starts_with("rmse")) %>% 
-  gather(key = model, value = rmse) %>% 
-  mutate(model = str_replace(model, "rmse_", ""),
-         model = fct_inorder(model)) %>% 
   group_by(model) %>% 
   summarize(mean_rmse = mean(rmse)) %>% 
   knitr::kable(align = "c") %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+  ggplot(aes(x = model, y = rmse)) +
+  geom_violin() +
+  theme_bw() +
+  labs(title = "Violin plots of two linear models' RMSE",
+       x = "Model",
+       y = "RMSE")
 ```
 
 
