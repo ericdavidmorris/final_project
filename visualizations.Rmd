@@ -67,6 +67,7 @@ citibike_tidy =
 The following plots depict the number of trips that started from and ended at each of the current Citi Bike stations, for January and March of 2017.
 
 There was little difference between starting station usage in the two months. The most trips were started at `r citibike_tidy %>% filter(start_month == "January") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-n)`, with `r citibike_tidy %>% filter(start_month == "January") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-start_station_name)` trips in January and `r citibike_tidy %>% filter(start_month == "March") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-start_station_name)` trips in March.
+  
 
 ```{r start stations, echo=FALSE}
 #plotly works nicely now
@@ -142,9 +143,9 @@ layout(
     list(x = 0.8 , y = 1.0, text = "March", showarrow = F, xref='paper', yref='paper'))
 )
 ```
-
+  
 The station where the most trips ended was also `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-n)`. In January, `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended at this station, and `r citibike_tidy %>% filter(start_month == "March") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended here in March.
-
+  
 ```{r end stations, echo=FALSE}
 citibike_end_jan = 
   citibike_tidy %>% 
@@ -214,11 +215,17 @@ layout(
 )
 ```
 
+<br/>
 
-### Trips by gender (1 = Male, 2 = Female)
+***
 
+<br/>
+  
+## Trips by gender
+Male = 0, Female = 1
 ```{r gender}
 # Histogram of when people start their rides, by gender!
+# I think this is biased since it seems like we have such fewer female riders...
 citibike_tidy %>% 
   group_by(gender) %>% 
   mutate(start_hour = str_sub(start_time, 0, 2),
@@ -230,17 +237,27 @@ citibike_tidy %>%
   facet_grid(~ gender)
 ```
 
-### Age ranges and average time spent on ride
+## Age ranges and average time spent on ride
 
 ```{r age_length_plot}
 # who are the people over 100; also, this is kind of ug the way i have done it; whose trips are more than 500 hours??????? how is this calculated??
 # Will definitely need to look into how some of these indicators are measured/calculated... This plot is pretty useless as is.
-citibike_tidy %>% 
-  mutate(trip_hour = trip_minutes / 60) %>% 
-  ggplot(aes(x = rider_age, y = trip_hour)) + 
-  geom_point(alpha = 0.5) +
-  geom_smooth(se = FALSE) +
-  facet_grid(~ gender)
+
+plot_ly(alpha = 0.6) %>%
+  add_histogram(x = ~citibike_tidy$rider_age[which(citibike_tidy$gender == 0)], name = "Male") %>%
+  add_histogram(x = ~citibike_tidy$rider_age[which(citibike_tidy$gender == 1)], name = "Female") %>%
+  layout(barmode = "overlay",
+         title = "Age of riders, by gender",
+         xaxis = list(title = "Rider age (years)"),
+         yaxis = list(title = "# riders (n)")
+    )
+
+# citibike_tidy %>% 
+#   mutate(trip_hour = trip_minutes / 60) %>% 
+#   ggplot(aes(x = rider_age, y = trip_hour)) + 
+#   geom_point(alpha = 0.5) +
+#   geom_smooth(se = FALSE) +
+#   facet_grid(~ gender)
 ```
 
 ### Most/least popular days of the week of travel 
