@@ -1,6 +1,7 @@
 ---
 title: "Visualizations"
-html_document:
+output:
+  html_document:
     toc: true
     toc_float:
       collapsed: false
@@ -18,11 +19,7 @@ library(stringr)
 library(kableExtra)
 ```
 
-<<<<<<< HEAD
-```{r Data Import Function, include=FALSE, message=FALSE}
-=======
 ```{r Data Import Function, include=FALSE, message =FALSE}
->>>>>>> 941d3b7d273cf3b1c18a4f681c1b30203da56281
 # Removed col names type for now and went with automatic column parsing
 
 citibike_import = function(file) {
@@ -63,20 +60,19 @@ citibike_tidy =
 # Reading the data directly from website doesn't work - thousands of parsing failures, both with auto parsing and when specifing column parsing in function
 # citibike_import("https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip"),
 # citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
-
 ```
 
-## Visualizations
+## Station usage
 
-### Station usage
+The following plots depict the number of trips that started from and ended at each of the current Citi Bike stations, for January and March of 2017.
 
-The following two plots depict the number of trips that started from each of the current Citi Bike stations, for January and March of 2017.
+There was little difference between starting station usage in the two months. The most trips were started at `r citibike_tidy %>% filter(start_month == "January") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-n)`, with `r citibike_tidy %>% filter(start_month == "January") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-start_station_name)` trips in January and `r citibike_tidy %>% filter(start_month == "March") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-start_station_name)` trips in March.
 
-```{r jan2017 start stations}
-
+```{r start stations, echo=FALSE}
 #plotly works nicely now
 
-citibike_tidy %>% 
+citibike_start_jan =
+  citibike_tidy %>% 
   filter(start_month == "January") %>% 
   group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
   summarize(n = n()) %>% 
@@ -86,10 +82,10 @@ citibike_tidy %>%
           color = ~n,
           text = ~text_label) %>% 
   layout(
-    title = "Starting station usage, January 2017",
     xaxis = list(title = "Longitude"),
     yaxis = list(title = "Latitude")
-    )
+    ) %>% 
+  colorbar(title = "Jan (n)")
 
 ## map of nyc based on lat/long, overlay ggplot on top? https://cran.r-project.org/web/packages/magick/vignettes/intro.html#combining
 
@@ -104,13 +100,9 @@ citibike_tidy %>%
 #  scale_color_viridis() +
 #  coord_cartesian() +
 #  theme_classic()
-```
 
-In January 2017, 
-
-
-``` {r}
-citibike_tidy %>% 
+citibike_start_mar =
+  citibike_tidy %>% 
   filter(start_month == "March") %>% 
   group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
   summarize(n = n()) %>% 
@@ -120,10 +112,10 @@ citibike_tidy %>%
           color = ~n,
           text = ~text_label) %>% 
   layout(
-    title = "Starting station usage, March 2017",
     xaxis = list(title = "Longitude"),
     yaxis = list(title = "Latitude")
-    )
+    ) %>% 
+  colorbar(title = "Mar (n)")
 
 #March ggplot of plotly above
 
@@ -136,18 +128,39 @@ citibike_tidy %>%
 #  scale_color_viridis() +
 #  coord_cartesian() +
 #  theme_classic()
+
+subplot(
+  citibike_start_jan %>% layout(showlegend = FALSE),
+  citibike_start_mar %>% layout(showlegend = FALSE),
+  margin = 0.05,
+  shareX = TRUE, shareY = TRUE
+) %>% 
+layout(
+  title = "Number of trips started at each station (2017)",
+  annotations = list(
+    list(x = 0.2 , y = 1.0, text = "January", showarrow = F, xref='paper', yref='paper'),
+    list(x = 0.8 , y = 1.0, text = "March", showarrow = F, xref='paper', yref='paper'))
+)
 ```
 
-```{r}
-citibike_tidy %>% 
+The station where the most trips ended was also `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-n)`. In January, `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended at this station, and `r citibike_tidy %>% filter(start_month == "March") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended here in March.
+
+```{r end stations, echo=FALSE}
+citibike_end_jan = 
+  citibike_tidy %>% 
   filter(start_month == "January") %>% 
   group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
   summarize(n = n()) %>% 
-  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips ended at this station: ', n)) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips started at this station: ', n)) %>% 
   plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
           alpha = 0.5,
           color = ~n,
-          text = ~text_label)
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Jan (n)")
 
 #Jan ggplot of plotly above
 #citibike_tidy %>% 
@@ -160,15 +173,21 @@ citibike_tidy %>%
 #  coord_cartesian() +
 #  theme_classic()
 
+citibike_end_mar = 
 citibike_tidy %>% 
   filter(start_month == "March") %>% 
   group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
   summarize(n = n()) %>% 
-  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips ended at this station: ', n)) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips started at this station: ', n)) %>% 
   plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
           alpha = 0.5,
           color = ~n,
-          text = ~text_label)
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Mar (n)")
 
 #March ggplot of plotly above
 #citibike_tidy %>% 
@@ -180,6 +199,19 @@ citibike_tidy %>%
 #  scale_color_viridis() +
 #  coord_cartesian() +
 #  theme_classic()
+
+subplot(
+  citibike_end_jan %>% layout(showlegend = FALSE),
+  citibike_end_mar %>% layout(showlegend = FALSE),
+  margin = 0.05,
+  shareX = TRUE, shareY = TRUE
+) %>% 
+layout(
+  title = "Number of trips ended at each station (2017)",
+  annotations = list(
+    list(x = 0.2 , y = 1.0, text = "January", showarrow = F, xref='paper', yref='paper'),
+    list(x = 0.8 , y = 1.0, text = "March", showarrow = F, xref='paper', yref='paper'))
+)
 ```
 
 
