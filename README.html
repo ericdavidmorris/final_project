@@ -11,7 +11,7 @@
 
 
 
-<title>Data Import</title>
+<title></title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -22,9 +22,6 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
-<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
-<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -201,6 +198,9 @@ $(document).ready(function () {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
+      <a href="data_import.html">data import</a>
+    </li>
+    <li>
       <a href="analysis.html">analysis + findings</a>
     </li>
     <li>
@@ -271,94 +271,13 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Data Import</h1>
 
 </div>
 
 
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
-<p>Data for this project was obtained from <a href="https://s3.amazonaws.com/tripdata/index.html">the company’s system data website</a>, which is provided according to the <a href="https://www.citibikenyc.com/data-sharing-policy">NYCBS Data Use Policy</a>. We downloaded CSV zip files of Citi Bike data for the corresponding months of interest in 2017.</p>
-<hr />
-</div>
-<div id="data-import" class="section level2">
-<h2>Data Import</h2>
-<p>Originally, we felt it was better to download directly from the data source for reproducibility purposes. However, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips vary from 25-70 MB). As such, we decided to download the zips of two months of interest and add them to our project’s data folder and import from there.</p>
-<pre class="r"><code># Removed col names type for now and went with automatic column parsing
-
-citibike_import = function(file) {
-  
-  df = read_csv(file, col_names = TRUE) %&gt;%
-    janitor::clean_names() %&gt;% 
-    separate(start_time, into = c(&quot;start_date&quot;, &quot;start_time&quot;), sep = &quot; &quot;) %&gt;% 
-    separate(stop_time, into = c(&quot;stop_date&quot;, &quot;stop_time&quot;), sep = &quot; &quot;) %&gt;% 
-    separate(start_date, into = c(&quot;start_year&quot;, &quot;start_month&quot;, &quot;start_day&quot;), sep = &quot;-&quot;) %&gt;% 
-    separate(stop_date, into = c(&quot;stop_year&quot;, &quot;stop_month&quot;, &quot;stop_day&quot;), sep = &quot;-&quot;) %&gt;% 
-    mutate(user_type = tolower(user_type),
-           gender = as.factor(gender - 1),
-           start_month = ifelse(start_month == &quot;01&quot;, &quot;January&quot;, &quot;March&quot;),
-           stop_month = ifelse(stop_month == &quot;01&quot;, &quot;January&quot;, &quot;March&quot;),
-           trip_minutes = (trip_duration / 60),
-           rider_age = (2017 - birth_year),
-           start_hour = as.numeric(str_sub(start_time, 0, 2)),
-           overnight = ifelse(start_hour &lt; 06 &amp; start_hour &gt;= 00, 1, 0),
-           morning = ifelse(start_hour &lt; 12 &amp; start_hour &gt;= 06, 1, 0),
-           afternoon = ifelse(start_hour &lt; 18 &amp; start_hour &gt;= 12, 1, 0),
-           night = ifelse(start_hour &lt;= 24 &amp; start_hour &gt;= 18, 1, 0)) %&gt;% 
-    filter(user_type == &quot;subscriber&quot;,
-           trip_minutes &gt; 5,
-           trip_minutes &lt;= 45,
-           !start_station_name %in% c(&quot;Bressler&quot;, &quot;Kiosk in a box Motivate&quot;, &quot;NYCBS Depot - FAR&quot;, &quot;NYCBS Depot - SSP&quot;, &quot;NYCBS Depot - STY&quot;, &quot;NYCBS Depot - DYR&quot;, &quot;NYCBS Depot BAL - DYR&quot;, &quot;SSP Tech Workshop&quot;, &quot;Penn Station Valet&quot;, &quot;Penn Station Valet - Valet Scan&quot;),
-           !end_station_name %in% c(&quot;Bressler&quot;, &quot;Kiosk in a box Motivate&quot;, &quot;NYCBS Depot - FAR&quot;, &quot;NYCBS Depot - SSP&quot;, &quot;NYCBS Depot - STY&quot;, &quot;NYCBS Depot - DYR&quot;, &quot;NYCBS Depot BAL - DYR&quot;, &quot;SSP Tech Workshop&quot;, &quot;Penn Station Valet&quot;, &quot;Penn Station Valet - Valet Scan&quot;),
-           gender != -1,
-           rider_age &lt; 100)
-  
-  df
-  
-}
-
-citibike_tidy = 
-  bind_rows(citibike_import(&quot;./data/201701-citibike-tripdata.csv.zip&quot;),
-            citibike_import(&quot;./data/201703-citibike-tripdata.csv.zip&quot;))</code></pre>
-<pre><code>## Parsed with column specification:
-## cols(
-##   `Trip Duration` = col_integer(),
-##   `Start Time` = col_datetime(format = &quot;&quot;),
-##   `Stop Time` = col_datetime(format = &quot;&quot;),
-##   `Start Station ID` = col_integer(),
-##   `Start Station Name` = col_character(),
-##   `Start Station Latitude` = col_double(),
-##   `Start Station Longitude` = col_double(),
-##   `End Station ID` = col_integer(),
-##   `End Station Name` = col_character(),
-##   `End Station Latitude` = col_double(),
-##   `End Station Longitude` = col_double(),
-##   `Bike ID` = col_integer(),
-##   `User Type` = col_character(),
-##   `Birth Year` = col_integer(),
-##   Gender = col_integer()
-## )
-## Parsed with column specification:
-## cols(
-##   `Trip Duration` = col_integer(),
-##   `Start Time` = col_datetime(format = &quot;&quot;),
-##   `Stop Time` = col_datetime(format = &quot;&quot;),
-##   `Start Station ID` = col_integer(),
-##   `Start Station Name` = col_character(),
-##   `Start Station Latitude` = col_double(),
-##   `Start Station Longitude` = col_double(),
-##   `End Station ID` = col_integer(),
-##   `End Station Name` = col_character(),
-##   `End Station Latitude` = col_double(),
-##   `End Station Longitude` = col_double(),
-##   `Bike ID` = col_integer(),
-##   `User Type` = col_character(),
-##   `Birth Year` = col_integer(),
-##   Gender = col_integer()
-## )</code></pre>
-<pre class="r"><code># Reading the data directly from website doesn&#39;t work - thousands of parsing failures, both with auto parsing and when specifing column parsing in function
-# citibike_import(&quot;https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip&quot;),
-# citibike_import(&quot;https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip&quot;))</code></pre>
+<div id="p8105-final-project" class="section level1">
+<h1>P8105 Final Project</h1>
+<p>Final Project Repository for Eric Morris, Tatini Mal-Sarkar and Grace Liu</p>
 </div>
 
 &nbsp;

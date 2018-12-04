@@ -9,8 +9,6 @@ navbar:
       href: about.html
     - text: "project"
       menu:
-      - text: "data import"
-        href: data_import.html
       - text: "analysis + findings"
         href: analysis.html
       - text: "visualizations"

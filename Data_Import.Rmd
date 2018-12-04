@@ -1,5 +1,5 @@
 ---
-title: "Data Import and Exploration"
+title: "Data Import"
 output: html_document
 ---
 
@@ -68,6 +68,3 @@ citibike_tidy =
 # citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
 
 ```
-
-
-***

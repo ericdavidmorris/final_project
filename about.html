@@ -201,9 +201,6 @@ $(document).ready(function () {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="data_import.html">data import</a>
-    </li>
-    <li>
       <a href="analysis.html">analysis + findings</a>
     </li>
     <li>
@@ -279,8 +276,11 @@ $(document).ready(function () {
 </div>
 
 
-<p><br/> <img src = "images/citi_bike_bridgeLRG.png" 
-  style="width:500px; display: block; margin-left: auto; margin-right: auto"> <br/></p>
+<br/>
+<div style="width:600px; font-size:80%; text-align:center; display: block; margin-left: auto; margin-right: auto">
+<img src="images/citibike_leo.jpg" style="padding-bottom:0.5em;"/>Eric D. Morris on Citi Bike
+</div>
+<p><br/></p>
 <hr />
 <div id="motivation" class="section level2">
 <h2>Motivation</h2>
@@ -291,7 +291,12 @@ $(document).ready(function () {
 <div id="scope-of-work" class="section level2">
 <h2>Scope of work</h2>
 <p>As avid bikers and customers of Citi Bike, we wanted to explore how use of Citi Bikes vary across neighborhoods, genders, ages, and across time. We were specifically interested in how Citi Bike members – New York local who pay either by month or by year to access unlimited 45 minute rides – utilized the service in the beginning months (January and March) of 2017. Due to the nature of the service, we restricted our analyses to trips lasting longer than 5 minutes and shorter than 45 minutes.</p>
-<!-- Initial questions: What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis? -->
+<hr />
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>Data for this project was obtained from <a href="https://s3.amazonaws.com/tripdata/index.html">the company’s system data website</a>, which is provided according to the <a href="https://www.citibikenyc.com/data-sharing-policy">NYCBS Data Use Policy</a>. We downloaded CSV zip files of Citi Bike data for the corresponding months of interest in 2017.</p>
+<p>Originally, we felt it was better to download directly from the data source for reproducibility purposes. However, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips vary from 25-70 MB). As such, we decided to download the zips of two months of interest and add them to our project’s data folder and import from there.</p>
 </div>
 
 &nbsp;
