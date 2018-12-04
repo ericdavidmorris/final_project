@@ -221,8 +221,25 @@ layout(
 
 <br/>
   
-## Trips by gender
-Male = 0, Female = 1
+## Trips by gender and age
+
+#### Rider characteristics
+
+In the months analyzed, there were significantly more rides by males compared to females. There were a total of `r format(nrow(subset(citibike_tidy, gender == 0)), big.mark = ",")` rides taken by male riders and `r format(nrow(subset(citibike_tidy, gender == 1)), big.mark = ",")` rides taken by female riders.
+
+The average age of a male rider was `r round(mean(citibike_tidy$rider_age[which(citibike_tidy$gender==0)]), digits = 2)` years, and ``r round(mean(citibike_tidy$rider_age[which(citibike_tidy$gender==1)]), digits = 2)` years for female riders. The oldest male rider was `r max(citibike_tidy$rider_age[which(citibike_tidy$gender==0)])` years old, and the oldest female rider was `r max(citibike_tidy$rider_age[which(citibike_tidy$gender==1)])` years old.
+  
+```{r riders age sex, echo=FALSE}
+plot_ly(alpha = 0.6) %>%
+  add_histogram(x = ~citibike_tidy$rider_age[which(citibike_tidy$gender == 0)], name = "Male") %>%
+  add_histogram(x = ~citibike_tidy$rider_age[which(citibike_tidy$gender == 1)], name = "Female") %>%
+  layout(barmode = "overlay",
+         title = "Age of riders, by gender",
+         xaxis = list(title = "Rider age (years)"),
+         yaxis = list(title = "# riders (n)")
+    )
+```
+
 ```{r gender}
 # Histogram of when people start their rides, by gender!
 # I think this is biased since it seems like we have such fewer female riders...
@@ -237,32 +254,29 @@ citibike_tidy %>%
   facet_grid(~ gender)
 ```
 
-## Age ranges and average time spent on ride
+#### Average ride length
 
-```{r age_length_plot}
+```{r age_length_plot, include=FALSE}
 # who are the people over 100; also, this is kind of ug the way i have done it; whose trips are more than 500 hours??????? how is this calculated??
 # Will definitely need to look into how some of these indicators are measured/calculated... This plot is pretty useless as is.
 
-plot_ly(alpha = 0.6) %>%
-  add_histogram(x = ~citibike_tidy$rider_age[which(citibike_tidy$gender == 0)], name = "Male") %>%
-  add_histogram(x = ~citibike_tidy$rider_age[which(citibike_tidy$gender == 1)], name = "Female") %>%
-  layout(barmode = "overlay",
-         title = "Age of riders, by gender",
-         xaxis = list(title = "Rider age (years)"),
-         yaxis = list(title = "# riders (n)")
-    )
-
-# citibike_tidy %>% 
-#   mutate(trip_hour = trip_minutes / 60) %>% 
-#   ggplot(aes(x = rider_age, y = trip_hour)) + 
-#   geom_point(alpha = 0.5) +
-#   geom_smooth(se = FALSE) +
-#   facet_grid(~ gender)
+citibike_tidy %>%
+  mutate(trip_hour = trip_minutes / 60) %>%
+  ggplot(aes(x = rider_age, y = trip_hour)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(se = FALSE) +
+  facet_grid(~ gender)
 ```
 
-### Most/least popular days of the week of travel 
+<br/>
 
+***
 
+<br/>
+
+## Trips by day of the week
+
+Most/least popular days of the week of travel 
 
 * Length of ride against day of month, by month
 
