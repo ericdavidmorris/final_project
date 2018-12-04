@@ -18,7 +18,11 @@ library(stringr)
 library(kableExtra)
 ```
 
+<<<<<<< HEAD
 ```{r Data Import Function, include=FALSE, message=FALSE}
+=======
+```{r Data Import Function, include=FALSE, message =FALSE}
+>>>>>>> 941d3b7d273cf3b1c18a4f681c1b30203da56281
 # Removed col names type for now and went with automatic column parsing
 
 citibike_import = function(file) {
@@ -209,15 +213,7 @@ citibike_tidy %>%
 
 ### Most/least popular days of the week of travel 
 
-* Simple linear regression of trip duration vs. age, sex, time of day (categorical: morning rush hour, morning, evening rush hour), day of week
 
-```{r}
-# exploring a model for predicting trip duration
-
-lm(trip_duration ~ rider_age + gender + overnight + morning + afternoon + night, 
-   data = citibike_tidy) %>% 
-  broom::tidy()
-```
 
 * Length of ride against day of month, by month
 

@@ -10,10 +10,232 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(plotly)
+library(viridis)
+library(ggridges)
+library(lubridate)
+library(stringr)
+library(kableExtra)
+library(modelr)
 ```
 
-## Analysis
+```{r Data Import Function, include=FALSE, message =FALSE}
+# Removed col names type for now and went with automatic column parsing
 
-First, we restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. 
+citibike_import = function(file) {
+  
+  df = read_csv(file, col_names = TRUE) %>%
+    janitor::clean_names() %>% 
+    separate(start_time, into = c("start_date", "start_time"), sep = " ") %>% 
+    separate(stop_time, into = c("stop_date", "stop_time"), sep = " ") %>% 
+    separate(start_date, into = c("start_year", "start_month", "start_day"), sep = "-") %>% 
+    separate(stop_date, into = c("stop_year", "stop_month", "stop_day"), sep = "-") %>% 
+    mutate(user_type = tolower(user_type),
+           gender = as.factor(gender - 1),
+           start_month = ifelse(start_month == "01", "January", "March"),
+           stop_month = ifelse(start_month == "01", "January", "March"),
+           trip_minutes = (trip_duration / 60),
+           rider_age = (2017 - birth_year),
+           start_hour = as.numeric(str_sub(start_time, 0, 2)),
+           overnight = ifelse(start_hour < 06 & start_hour >= 00, 1, 0),
+           morning = ifelse(start_hour < 12 & start_hour >= 06, 1, 0),
+           afternoon = ifelse(start_hour < 18 & start_hour >= 12, 1, 0),
+           night = ifelse(start_hour <= 24 & start_hour >= 18, 1, 0)) %>% 
+    filter(user_type == "subscriber",
+           trip_minutes > 5,
+           trip_minutes <= 45,
+           !start_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "NYCBS Depot BAL - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           !end_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "NYCBS Depot BAL - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           gender != -1,
+           rider_age < 100)
+  
+  df
+  
+}
 
-## Findings
+citibike_tidy = 
+  bind_rows(citibike_import("./data/201701-citibike-tripdata.csv.zip"),
+            citibike_import("./data/201703-citibike-tripdata.csv.zip"))
+
+# Reading the data directly from website doesn't work - thousands of parsing failures, both with auto parsing and when specifing column parsing in function
+# citibike_import("https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip"),
+# citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
+
+```
+
+## Exploratory Analysis
+
+We restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. We also eliminated all stations we thought weren't really stations, like kiosks, depots, and valets. Then, we did some exploratory analysis on which stations were the most popular to start and end at.
+
+### Most (and least) used starting stations
+
+```{r Starting Station Kables}
+
+# Top 10 starting stations in the month of January
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(5, n) %>% 
+  arrange(desc(n)) %>% 
+  mutate(n = format(n, big.mark = ",")) %>%
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Times used in January 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Top 10 starting stations in the month of March
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(5, n) %>% 
+  arrange(desc(n)) %>%
+  mutate(n = format(n, big.mark = ",")) %>%
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Times used in March 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Bottom 10 starting stations in the month of January
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-5, n) %>% 
+  arrange(n) %>% 
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Times used in January 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Bottom 10 starting stations in the month of March
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-5, n) %>% 
+  arrange(n) %>% 
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Times used in March 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+```
+
+
+### Most (and least) used terminal stations
+
+```{r Ending Station Kables}
+# Top 10 terminal stations in the month of January
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(5, n) %>% 
+  arrange(desc(n)) %>% 
+  mutate(n = format(n, big.mark = ",")) %>%
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Times used in January 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Top 10 terminal stations in the month of March
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(5, n) %>% 
+  arrange(desc(n)) %>% 
+  mutate(n = format(n, big.mark = ",")) %>%
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Times used in March 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Bottom 10 terminal stations in the month of January
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-5, n) %>% 
+  arrange(n) %>% 
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Times used in January 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Bottom 10 terminal stations in the month of March
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-5, n) %>% 
+  arrange(n) %>% 
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Times used in March 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+```
+
+
+## Linear regression
+
+We were pretty excited to see which stations were most used in January and March. Then we got to thinking about what sort of stuff might affect trip length, like age, sex, and time of day. Time of day had us confused for a while, because we weren't convinced there was a directly linear relationship between each added hour and trip length (7 to 8am is pretty different from 1 to 2am, for instance). So we treated time of day as a categorical variable, with morning as 6am-12pm, afternoon as 12pm-6pm, and night as 5pm-12am, and the reference group as 12am-6am. 
+
+```{r linear_mod}
+# exploring a model for predicting trip duration
+fit = lm(trip_duration ~ rider_age + gender + morning + afternoon + night, 
+   data = citibike_tidy) 
+
+fit %>% 
+  broom::tidy() %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+```
+
+```{r linear_mod_res}
+citibike_tidy %>% 
+  modelr::add_residuals(fit) %>% 
+  ggplot(aes(x = gender, y = resid)) +
+  geom_violin()
+
+citibike_tidy %>% 
+  modelr::add_residuals(fit) %>% 
+  gather(key = time, value = drop_var, morning:night) %>% 
+  select(-drop_var) %>% 
+  ggplot(aes(x = time, y = resid)) +
+  geom_violin()
+```
+
+We're going to try cross-validating and comparing to a simpler model that DOESN'T include time of day
+```{r}
+
+```
+
+
+## Takeaways
