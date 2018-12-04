@@ -18,11 +18,57 @@ library(stringr)
 library(kableExtra)
 ```
 
+```{r Data Import Function, include=FALSE, message=FALSE}
+# Removed col names type for now and went with automatic column parsing
+
+citibike_import = function(file) {
+  
+  df = read_csv(file, col_names = TRUE) %>%
+    janitor::clean_names() %>% 
+    separate(start_time, into = c("start_date", "start_time"), sep = " ") %>% 
+    separate(stop_time, into = c("stop_date", "stop_time"), sep = " ") %>% 
+    separate(start_date, into = c("start_year", "start_month", "start_day"), sep = "-") %>% 
+    separate(stop_date, into = c("stop_year", "stop_month", "stop_day"), sep = "-") %>% 
+    mutate(user_type = tolower(user_type),
+           gender = as.factor(gender - 1),
+           start_month = ifelse(start_month == "01", "January", "March"),
+           stop_month = ifelse(start_month == "01", "January", "March"),
+           trip_minutes = (trip_duration / 60),
+           rider_age = (2017 - birth_year),
+           start_hour = as.numeric(str_sub(start_time, 0, 2)),
+           overnight = ifelse(start_hour < 06 & start_hour >= 00, 1, 0),
+           morning = ifelse(start_hour < 12 & start_hour >= 06, 1, 0),
+           afternoon = ifelse(start_hour < 18 & start_hour >= 12, 1, 0),
+           night = ifelse(start_hour <= 24 & start_hour >= 18, 1, 0)) %>% 
+    filter(user_type == "subscriber",
+           trip_minutes > 5,
+           trip_minutes <= 45,
+           !start_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "NYCBS Depot BAL - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           !end_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "NYCBS Depot BAL - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           gender != -1,
+           rider_age < 100)
+  
+  df
+  
+}
+
+citibike_tidy = 
+  bind_rows(citibike_import("./data/201701-citibike-tripdata.csv.zip"),
+            citibike_import("./data/201703-citibike-tripdata.csv.zip"))
+
+# Reading the data directly from website doesn't work - thousands of parsing failures, both with auto parsing and when specifing column parsing in function
+# citibike_import("https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip"),
+# citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
+
+```
+
 ## Visualizations
 
 ### Station usage
 
-```{r Plotly}
+The following two plots depict the number of trips that started from each of the current Citi Bike stations, for January and March of 2017.
+
+```{r jan2017 start stations}
 
 #plotly works nicely now
 
@@ -34,7 +80,12 @@ citibike_tidy %>%
   plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
           alpha = 0.5,
           color = ~n,
-          text = ~text_label)
+          text = ~text_label) %>% 
+  layout(
+    title = "Starting station usage, January 2017",
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    )
 
 ## map of nyc based on lat/long, overlay ggplot on top? https://cran.r-project.org/web/packages/magick/vignettes/intro.html#combining
 
@@ -49,7 +100,12 @@ citibike_tidy %>%
 #  scale_color_viridis() +
 #  coord_cartesian() +
 #  theme_classic()
+```
 
+In January 2017, 
+
+
+``` {r}
 citibike_tidy %>% 
   filter(start_month == "March") %>% 
   group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
@@ -58,7 +114,12 @@ citibike_tidy %>%
   plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
           alpha = 0.5,
           color = ~n,
-          text = ~text_label)
+          text = ~text_label) %>% 
+  layout(
+    title = "Starting station usage, March 2017",
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    )
 
 #March ggplot of plotly above
 
@@ -71,7 +132,9 @@ citibike_tidy %>%
 #  scale_color_viridis() +
 #  coord_cartesian() +
 #  theme_classic()
+```
 
+```{r}
 citibike_tidy %>% 
   filter(start_month == "January") %>% 
   group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
