@@ -25,7 +25,7 @@ navbar:
           text: "tatini mal-sarkar"
           href: mailto:tm2680@cumc.columbia.edu
     - icon: fa-youtube fa-lg
-      href: https://www.youtube.com/watch?v=FAFfefzMlJo
+      href: https://www.youtube.com/watch?v=FAFfefzMlJo&feature=youtu.be
     - icon: fa-book fa-lg
       href: report.html
     - icon: fa-github fa-lg
