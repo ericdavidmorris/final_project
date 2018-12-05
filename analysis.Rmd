@@ -262,10 +262,7 @@ citibike_tidy %>%
 
 ```
 
-
-We're going to try cross-validating and comparing to a simpler model that DOESN'T include time of day.
-
-We wanted to see if our model worked better than a simpler model that only included gender and age. So we used cross-validation to test if adding time of day improved our RMSE.
+We attempted to cross-validate our model and compare to a simpler linear model which didn't include time of day. 
 
 ```{r Cross Validation and RMSE visualization}
 
@@ -291,7 +288,3 @@ cv_citibike %>%
        x = "Model",
        y = "RMSE")
 ```
-
-
-
-## Takeaways

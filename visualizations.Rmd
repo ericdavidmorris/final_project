@@ -86,20 +86,6 @@ citibike_start_jan =
     ) %>% 
   colorbar(title = "Jan (n)")
 
-## map of nyc based on lat/long, overlay ggplot on top? https://cran.r-project.org/web/packages/magick/vignettes/intro.html#combining
-
-#Jan ggplot of plotly above
-
-#citibike_tidy %>% 
-#  filter(start_month == "January") %>% 
-#  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
-#  summarize(n = n()) %>% 
-#  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
-#  geom_point(alpha = 0.3) + 
-#  scale_color_viridis() +
-#  coord_cartesian() +
-#  theme_classic()
-
 citibike_start_mar =
   citibike_tidy %>% 
   filter(start_month == "March") %>% 
@@ -116,18 +102,6 @@ citibike_start_mar =
     ) %>% 
   colorbar(title = "Mar (n)")
 
-#March ggplot of plotly above
-
-#citibike_tidy %>% 
-#  filter(start_month == "March") %>% 
-#  group_by(start_station_id, start_station_latitude, start_station_longitude) %>% 
-#  summarize(n = n()) %>% 
-#  ggplot(aes(x = start_station_longitude, y = start_station_latitude, color = n)) +
-#  geom_point(alpha = 0.3) + 
-#  scale_color_viridis() +
-#  coord_cartesian() +
-#  theme_classic()
-
 subplot(
   citibike_start_jan %>% layout(showlegend = FALSE),
   citibike_start_mar %>% layout(showlegend = FALSE),
@@ -143,7 +117,7 @@ layout(
 ```
 <br/>
 
-#### End station
+#### Terminal station
 
 The station where the most trips ended was also `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-n)`. In January, `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended at this station, and `r citibike_tidy %>% filter(start_month == "March") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended here in March.
   
@@ -165,17 +139,6 @@ citibike_end_jan =
     ) %>% 
   colorbar(title = "Jan (n)")
 
-#Jan ggplot of plotly above
-#citibike_tidy %>% 
-#  filter(start_month == "January") %>% 
-#  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
-#  summarize(n = n()) %>% 
-#  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
-#  geom_point(alpha = 0.3) + 
-#  scale_color_viridis() +
-#  coord_cartesian() +
-#  theme_classic()
-
 citibike_end_mar = 
 citibike_tidy %>% 
   filter(start_month == "March") %>% 
@@ -191,17 +154,6 @@ citibike_tidy %>%
     yaxis = list(title = "Latitude")
     ) %>% 
   colorbar(title = "Mar (n)")
-
-#March ggplot of plotly above
-#citibike_tidy %>% 
-#  filter(start_month == "March") %>% 
-#  group_by(end_station_id, end_station_latitude, end_station_longitude) %>% 
-#  summarize(n = n()) %>% 
-#  ggplot(aes(x = end_station_longitude, y = end_station_latitude, color = n)) +
-#  geom_point(alpha = 0.3) + 
-#  scale_color_viridis() +
-#  coord_cartesian() +
-#  theme_classic()
 
 subplot(
   citibike_end_jan %>% layout(showlegend = FALSE),

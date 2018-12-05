@@ -10,24 +10,437 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(plotly)
+library(viridis)
+library(lubridate)
+library(stringr)
+library(kableExtra)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Motivation
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Since its launch in 2013, [CitiBike]("https://www.citibikenyc.com/") has proved to be a popular and essential addition to the New York City transportation network. As of late 2017, the CitiBike program reports 12,000 bikes and 750 stations in use across 60 NYC neighborhoods. The program continues to expand to new locations across the city each year and provides a valuable, environmentally-friendly, and cost-effective alternative form of transportation to New Yorkers. 
 
-```{r cars}
-summary(cars)
+Lyft, the ride-share company, [announced](https://www.theverge.com/2018/7/2/17526892/lyft-buys-motivate-bike-sharing-expansion) its plans to purchase Motivate (Citi Bike's parent company) in July 2018, and the acquisition was finalized this November. With the help of a five-year $100 million [investment](https://www.theverge.com/2018/11/29/18118057/citi-bike-lyft-triple-size-100-million-investment-nyc) from its new owner, CitiBike plans to grow to 40,000 bikes and double its service area by 35 square miles. This significant expansion will turn Citi Bike into one of the largest bike-share programs in the world.
+
+As avid bikers and customers of CitiBike, we wanted to explore how use of Citi Bikes vary across neighborhoods, genders, ages, and across time. We were specifically interested in how CitiBike members -- New York local who pay either by month or by year to access unlimited 45 minute rides -- utilized the service in the beginning months (January and March) of 2017. Due to the nature of the service, we restricted our analyses to trips lasting longer than 5 minutes and shorter than 45 minutes.
+
+## Related Work 
+
+[Todd Schneider](http://toddwschneider.com/), is a NYC-based software developer has written two interesting pieces on CitiBike habits including if the bikes were [faster than taxis](http://toddwschneider.com/posts/taxi-vs-citi-bike-nyc/) and an [enormous analysis of the system data with some pretty sweet visualizations](http://toddwschneider.com/posts/a-tale-of-twenty-two-million-citi-bikes-analyzing-the-nyc-bike-share-system/). Mr. Schneider has an intense [GitHub repository](https://github.com/toddwschneider/nyc-citibike-data) on his analysis and methods, which served as a first inspirtation for the project. 
+
+## Initial Questions 
+
+Initial research questions of interest included: 
+
+* How does gender influence Citi Bike use?
+
+* Which stations are most popular to start at? To end at? Can we visualize stations by activity (similar to our Airbnb plotlys from class)?
+
+* Are there differences in activity between month?
+
+* How does time of day affect Citi Bike use?
+
+
+## Data Introduction 
+
+Data for this project was obtained from [the company's system data website](https://s3.amazonaws.com/tripdata/index.html), which is provided according to the [NYCBS Data Use Policy](https://www.citibikenyc.com/data-sharing-policy). We downloaded CSV zip files of Citi Bike data for the corresponding months of interest in 2017. The data for January 2017 can be downloaded [here](https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip) and the data for March 2017 can be downloaded [here](https://s3.amazonaws.com/tripdata/201704-citibike-tripdata.csv.zip)
+
+***
+
+## Data Import
+
+Originally, we felt it was better to download directly from the data source for reproducibility purposes. However, when using read_csv with the direct URL to the zip, there were several parsing errors and the import failed. This may be due to the size of the files (zips vary from 25-70 MB). As such, we decided to download the zips of two months of interest and add them to our project's data folder and import from there.
+
+## Data Manipulation and Tidying
+
+We first separated both start and stop times and dates. We mutated gender to be a 0 and 1 factor variable rather than 1 and 2, and calculated rider age by using the birth year. We then created categorical variables for ride time of day, which will be used later in our regression model. We filtered our data to include only CitiBike annual subscribers, as day-pass users' ride patterns were highly variable and often was missing demographic data. We limited our dataset to only include rides longer than 5 minutes, to account for potential false rides and less than 45 minutes, which is the time limit for subscribers. Addtional exclusions included riders over the age of 100, and stations which were not 'true' or regular stations (kiosks, depots, and valets) listed on the CitiBike station map. 
+
+```{r Data Import Function}
+# Removed col names type for now and went with automatic column parsing
+
+citibike_import = function(file) {
+  
+  df = read_csv(file, col_names = TRUE) %>%
+    janitor::clean_names() %>% 
+    separate(start_time, into = c("start_date", "start_time"), sep = " ") %>% 
+    separate(stop_time, into = c("stop_date", "stop_time"), sep = " ") %>% 
+    separate(start_date, into = c("start_year", "start_month", "start_day"), sep = "-") %>% 
+    separate(stop_date, into = c("stop_year", "stop_month", "stop_day"), sep = "-") %>% 
+    mutate(user_type = tolower(user_type),
+           gender = as.factor(gender - 1),
+           start_month = ifelse(start_month == "01", "January", "March"),
+           stop_month = ifelse(stop_month == "01", "January", "March"),
+           trip_minutes = (trip_duration / 60),
+           rider_age = (2017 - birth_year),
+           start_hour = as.numeric(str_sub(start_time, 0, 2)),
+           overnight = ifelse(start_hour < 06 & start_hour >= 00, 1, 0),
+           morning = ifelse(start_hour < 12 & start_hour >= 06, 1, 0),
+           afternoon = ifelse(start_hour < 18 & start_hour >= 12, 1, 0),
+           night = ifelse(start_hour <= 24 & start_hour >= 18, 1, 0)) %>% 
+    filter(user_type == "subscriber",
+           trip_minutes > 5,
+           trip_minutes <= 45,
+           !start_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "NYCBS Depot BAL - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           !end_station_name %in% c("Bressler", "Kiosk in a box Motivate", "NYCBS Depot - FAR", "NYCBS Depot - SSP", "NYCBS Depot - STY", "NYCBS Depot - DYR", "NYCBS Depot BAL - DYR", "SSP Tech Workshop", "Penn Station Valet", "Penn Station Valet - Valet Scan"),
+           gender != -1,
+           rider_age < 100)
+  
+  df
+  
+}
+
+citibike_tidy = 
+  bind_rows(citibike_import("./data/201701-citibike-tripdata.csv.zip"),
+            citibike_import("./data/201703-citibike-tripdata.csv.zip"))
+
+# Reading the data directly from website doesn't work - thousands of parsing failures, both with auto parsing and when specifing column parsing in function
+# citibike_import("https://s3.amazonaws.com/tripdata/201701-citibike-tripdata.csv.zip"),
+# citibike_import("https://s3.amazonaws.com/tripdata/201703-citibike-tripdata.csv.zip"))
+
 ```
 
-## Including Plots
+## Analysis 
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+### Demographics
+```{r Exploratory Kable}
+citibike_tidy %>% 
+  mutate(gender = ifelse(gender == 0, "Male", "Female")) %>% 
+  group_by(gender) %>% 
+  summarize(number = n(),
+            mean_age = mean(rider_age),
+            median_age = median(rider_age),
+            sd_age = sd(rider_age)) %>% 
+  rename("Gender" = gender,
+         "Number" = number,
+         "Mean Age" = mean_age,
+         "Median Age" = median_age,
+         "Standard Deviation" = sd_age) %>% 
+  knitr::kable(align = "c", digits = 2) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+In our initial descriptive analysis, we found that there were more than three times as many trips by male riders than female riders. The average age of riders in both months regardless of gender was around 40 years old, and the median ages by gender differed by two years. 
+
+
+## Station Usage
+
+#### Starting station
+
+There was little difference between station usage in the two months. The most trips started at `r citibike_tidy %>% filter(start_month == "January") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-n)`, which is located right next to Grand Central Station. There were `r citibike_tidy %>% filter(start_month == "January") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-start_station_name)` trips starting from this station in January and `r citibike_tidy %>% filter(start_month == "March") %>% group_by(start_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-start_station_name)` trips in March.
+
+```{r start stations, echo=FALSE}
+#plotly works nicely now
+
+citibike_start_jan =
+  citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", start_station_name, '\n# of trips started at this station: ', n)) %>% 
+  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Jan (n)")
+
+citibike_start_mar =
+  citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", start_station_name, '\n# of trips started at this station: ', n)) %>% 
+  plot_ly(x = ~start_station_longitude, y = ~start_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Mar (n)")
+
+subplot(
+  citibike_start_jan %>% layout(showlegend = FALSE),
+  citibike_start_mar %>% layout(showlegend = FALSE),
+  margin = 0.05,
+  shareX = TRUE, shareY = TRUE
+) %>% 
+layout(
+  title = "Number of trips started at each station (2017)",
+  annotations = list(
+    list(x = 0.2 , y = 1.0, text = "January", showarrow = F, xref='paper', yref='paper'),
+    list(x = 0.8 , y = 1.0, text = "March", showarrow = F, xref='paper', yref='paper'))
+)
+```
+
+
+#### Terminal station
+
+The station where the most trips ended was also `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-n)`. In January, `r citibike_tidy %>% filter(start_month == "January") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended at this station, and `r citibike_tidy %>% filter(start_month == "March") %>% group_by(end_station_name) %>% summarize(n = n()) %>% top_n(1, n) %>% select(-end_station_name)` trips ended here in March.
+  
+<br/>
+```{r end stations, echo=FALSE}
+citibike_end_jan = 
+  citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips started at this station: ', n)) %>% 
+  plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Jan (n)")
+
+citibike_end_mar = 
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(end_station_name, end_station_latitude, end_station_longitude) %>% 
+  summarize(n = n()) %>% 
+  mutate(text_label = str_c("Station name: ", end_station_name, '\n# of trips started at this station: ', n)) %>% 
+  plot_ly(x = ~end_station_longitude, y = ~end_station_latitude, type = "scatter", mode = "markers",
+          alpha = 0.5,
+          color = ~n,
+          text = ~text_label) %>% 
+  layout(
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+    ) %>% 
+  colorbar(title = "Mar (n)")
+
+subplot(
+  citibike_end_jan %>% layout(showlegend = FALSE),
+  citibike_end_mar %>% layout(showlegend = FALSE),
+  margin = 0.05,
+  shareX = TRUE, shareY = TRUE
+) %>% 
+layout(
+  title = "Number of trips ended at each station (2017)",
+  annotations = list(
+    list(x = 0.2 , y = 1.0, text = "January", showarrow = F, xref='paper', yref='paper'),
+    list(x = 0.8 , y = 1.0, text = "March", showarrow = F, xref='paper', yref='paper'))
+)
+```
+
+
+### Most (and least) used starting stations
+
+```{r Starting Station Kables}
+
+# Top 5 starting stations in the month of January
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(5, n) %>% 
+  arrange(desc(n)) %>% 
+  mutate(n = format(n, big.mark = ",")) %>%
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Times used in January 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Top 5 starting stations in the month of March
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(5, n) %>% 
+  arrange(desc(n)) %>%
+  mutate(n = format(n, big.mark = ",")) %>%
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Times used in March 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Bottom 5 starting stations in the month of January
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-5, n) %>% 
+  arrange(n) %>% 
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Times used in January 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Bottom 5 starting stations in the month of March
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(start_station_id, start_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-5, n) %>% 
+  arrange(n) %>% 
+  select(-start_station_id) %>% 
+  rename("Starting CitiBike Station (Address)" = start_station_name,
+         "Times used in March 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+```
+
+
+### Most (and least) used terminal stations
+
+```{r Ending Station Kables}
+# Top 5 terminal stations in the month of January
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(5, n) %>% 
+  arrange(desc(n)) %>% 
+  mutate(n = format(n, big.mark = ",")) %>%
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Times used in January 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Top 5 terminal stations in the month of March
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(5, n) %>% 
+  arrange(desc(n)) %>% 
+  mutate(n = format(n, big.mark = ",")) %>%
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Times used in March 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Bottom 5 terminal stations in the month of January
+
+citibike_tidy %>% 
+  filter(start_month == "January") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-5, n) %>% 
+  arrange(n) %>% 
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Times used in January 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+# Bottom 5 terminal stations in the month of March
+
+citibike_tidy %>% 
+  filter(start_month == "March") %>% 
+  group_by(end_station_id, end_station_name) %>% 
+  summarize(n = n()) %>% 
+  ungroup() %>% 
+  top_n(-5, n) %>% 
+  arrange(n) %>% 
+  select(-end_station_id) %>% 
+  rename("Terminal CitiBike Station (Address)" = end_station_name,
+         "Times used in March 2017 (n)" = n) %>% 
+  knitr::kable(align = "c") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+```
+
+## Linear regression
+
+We were pretty excited to see which stations were most used in January and March. Then we got to thinking about what sort of stuff might affect trip length, like age, sex, and time of day. Time of day had us confused for a while, because we weren't convinced there was a directly linear relationship between each added hour and trip length (7 to 8am is pretty different from 1 to 2am, for instance). So we treated time of day as a categorical variable, with morning as 6am-12pm, afternoon as 12pm-6pm, and night as 5pm-12am, and the reference group as 12am-6am. 
+
+```{r linear_mod}
+# exploring a model for predicting trip duration
+fit = lm(trip_duration ~ rider_age + gender + morning + afternoon + night, 
+   data = citibike_tidy) 
+
+fit %>% 
+  broom::tidy() %>% 
+  rename("Predictor" = term,
+         "Estimate" = estimate,
+         "Standard Error" = std.error,
+         "Test Statistic" = statistic,
+         "p-value" = p.value) %>% 
+  knitr::kable(align = "c", digits = 2) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
+```
+
+The table above shows our predictors' coefficients, test statistics, and p-values.
+
+```{r linear_mod_res}
+# Quickly plotting residuals 
+
+citibike_tidy %>% 
+  modelr::add_residuals(fit) %>% 
+  ggplot(aes(x = gender, y = resid)) +
+  geom_violin()
+
+citibike_tidy %>% 
+  modelr::add_residuals(fit) %>% 
+  gather(key = time, value = drop_var, overnight:night) %>% 
+  select(-drop_var) %>% 
+  ggplot(aes(x = time, y = resid)) +
+  geom_violin()
+
+```
+
+We attempted to cross-validate our model and compare to a simpler linear model which didn't include time of day. 
+
+```{r Cross Validation and RMSE visualization}
+
+cv_citibike = 
+  crossv_mc(citibike_tidy, 50)
+
+cv_citibike = 
+  cv_citibike %>% 
+  mutate(our_model = map(train, ~lm(trip_duration ~ rider_age + gender + morning + afternoon + night, data = .)),
+         simple_model = map(train, ~lm(trip_duration ~ rider_age + gender, data = .x))) %>% 
+  mutate(rmse_our = map2_dbl(our_model, test, ~rmse(model = .x, data = .y)),
+         rmse_simple = map2_dbl(simple_model, test, ~rmse(model = .x, data = .y)))
+
+cv_citibike %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+  mutate(model = str_replace(model, "rmse_", ""),
+         model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) +
+  geom_violin() +
+  theme_bw() +
+  labs(title = "Violin plots of two linear models' RMSE",
+       x = "Model",
+       y = "RMSE")
+```
+
+## Discussion
+
+We used linear regression models to attempt to predict length of trip by age, sex, and ride time of day (categorical). We checked to make sure there were no observable patterns in our residuals by gender or ride time category. Interestingly, though all of our parameters had significant p-values, our r-squared and adjusted r-squared values were very low (around 0.5%). This means that approximately 0.5% of the variation in length of trip was explained by the predictors in our model. Our parameters may have been significant at an alpha of 0.05 due to the sheer size of our dataset. This demonstrates the importance of conducting additional analyses, as simply using p-values might lead to spurious conclusions of predictive value. We also used cross-validation to explore whether our model explained more variation than a more parsimonious model consisting only of age and sex. A plot comparing the RMSEs of the simpler model to the more complex model demonstrated only a very slight improvement with the more complex model, with generally large RMSEs in both. 
+
+## Future Directions 
+
+While we were restricted with the variables provided in our dataset, our model may certainly improve as we gain more experience as data scientists. One potential improvement might be adding location-specific predictors. 
