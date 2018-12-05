@@ -234,11 +234,20 @@ fit = lm(trip_duration ~ rider_age + gender + morning + afternoon + night,
 
 fit %>% 
   broom::tidy() %>% 
-  knitr::kable(align = "c") %>% 
+  rename("Predictor" = term,
+         "Estimate" = estimate,
+         "Standard Error" = std.error,
+         "Test Statistic" = statistic,
+         "p-value" = p.value) %>% 
+  knitr::kable(align = "c", digits = 2) %>% 
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, position = "center")
+
 ```
 
+
 ```{r linear_mod_res}
+# Plotting residuals 
+
 citibike_tidy %>% 
   modelr::add_residuals(fit) %>% 
   ggplot(aes(x = gender, y = resid)) +
