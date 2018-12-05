@@ -306,7 +306,7 @@ div.tocify {
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="data_import.html">data import + exploration</a>
+      <a href="data_import.html">data import</a>
     </li>
     <li>
       <a href="analysis.html">analysis + findings</a>
@@ -327,21 +327,21 @@ div.tocify {
       <a href="mailto:edm2152@cumc.columbia.edu">
         <span class="fa fa-envelope"></span>
          
-        Eric Morris
+        eric morris
       </a>
     </li>
     <li>
       <a href="mailto:gsl2116@cumc.columbia.edu">
         <span class="fa fa-envelope"></span>
          
-        Grace Liu
+        grace liu
       </a>
     </li>
     <li>
       <a href="mailto:tm2680@cumc.columbia.edu">
         <span class="fa fa-envelope"></span>
          
-        Tatini Mal-Sakar
+        tatini mal-sakar
       </a>
     </li>
   </ul>
@@ -349,6 +349,12 @@ div.tocify {
 <li>
   <a href="https://www.youtube.com">
     <span class="fa fa-youtube fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://placeholder">
+    <span class="fa fa-book fa-lg"></span>
      
   </a>
 </li>
@@ -380,10 +386,84 @@ div.tocify {
 
 <div id="exploratory-analysis" class="section level2">
 <h2>Exploratory Analysis</h2>
-<p>We restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. We also eliminated all stations we thought weren’t really stations, like kiosks, depots, and valets. Then, we did some exploratory analysis on which stations were the most popular to start and end at.</p>
+<p>We restricted our analyses to users who pay for subscriptions and to trips lasting longer than 5 minutes and shorter than or equal to 45 minutes. We also eliminated all stations we thought weren’t really stations, like kiosks, depots, and valets. Then, we did some overall exploratory analysis on demographic variables, like gender and age. Finally, we investigated which stations were the most popular to start and end at.</p>
+<div id="demographics" class="section level3">
+<h3>Demographics</h3>
+<pre class="r"><code>citibike_tidy %&gt;% 
+  mutate(gender = ifelse(gender == 0, &quot;Male&quot;, &quot;Female&quot;)) %&gt;% 
+  group_by(gender) %&gt;% 
+  summarize(number = n(),
+            mean_age = mean(rider_age),
+            median_age = median(rider_age),
+            sd_age = sd(rider_age)) %&gt;% 
+  rename(&quot;Gender&quot; = gender,
+         &quot;Number&quot; = number,
+         &quot;Mean Age&quot; = mean_age,
+         &quot;Median Age&quot; = median_age,
+         &quot;Standard Deviation&quot; = sd_age) %&gt;% 
+  knitr::kable(align = &quot;c&quot;, digits = 2) %&gt;% 
+  kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;), full_width = F, position = &quot;center&quot;)</code></pre>
+<table class="table table-striped table-hover" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;">
+Gender
+</th>
+<th style="text-align:center;">
+Number
+</th>
+<th style="text-align:center;">
+Mean Age
+</th>
+<th style="text-align:center;">
+Median Age
+</th>
+<th style="text-align:center;">
+Standard Deviation
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+Female
+</td>
+<td style="text-align:center;">
+250221
+</td>
+<td style="text-align:center;">
+39.01
+</td>
+<td style="text-align:center;">
+36
+</td>
+<td style="text-align:center;">
+11.97
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+Male
+</td>
+<td style="text-align:center;">
+824539
+</td>
+<td style="text-align:center;">
+40.12
+</td>
+<td style="text-align:center;">
+38
+</td>
+<td style="text-align:center;">
+11.91
+</td>
+</tr>
+</tbody>
+</table>
+</div>
 <div id="most-and-least-used-starting-stations" class="section level3">
 <h3>Most (and least) used starting stations</h3>
-<pre class="r"><code># Top 10 starting stations in the month of January
+<pre class="r"><code># Top 5 starting stations in the month of January
 
 citibike_tidy %&gt;% 
   filter(start_month == &quot;January&quot;) %&gt;% 
@@ -452,7 +532,7 @@ Broadway &amp; E 22 St
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Top 10 starting stations in the month of March
+<pre class="r"><code># Top 5 starting stations in the month of March
 
 citibike_tidy %&gt;% 
   filter(start_month == &quot;March&quot;) %&gt;% 
@@ -521,7 +601,7 @@ W 21 St &amp; 6 Ave
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Bottom 10 starting stations in the month of January
+<pre class="r"><code># Bottom 5 starting stations in the month of January
 
 citibike_tidy %&gt;% 
   filter(start_month == &quot;January&quot;) %&gt;% 
@@ -589,7 +669,7 @@ Columbia St &amp; Lorraine St
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Bottom 10 starting stations in the month of March
+<pre class="r"><code># Bottom 5 starting stations in the month of March
 
 citibike_tidy %&gt;% 
   filter(start_month == &quot;March&quot;) %&gt;% 
@@ -660,7 +740,7 @@ Columbia St &amp; Lorraine St
 </div>
 <div id="most-and-least-used-terminal-stations" class="section level3">
 <h3>Most (and least) used terminal stations</h3>
-<pre class="r"><code># Top 10 terminal stations in the month of January
+<pre class="r"><code># Top 5 terminal stations in the month of January
 
 citibike_tidy %&gt;% 
   filter(start_month == &quot;January&quot;) %&gt;% 
@@ -729,7 +809,7 @@ W 21 St &amp; 6 Ave
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Top 10 terminal stations in the month of March
+<pre class="r"><code># Top 5 terminal stations in the month of March
 
 citibike_tidy %&gt;% 
   filter(start_month == &quot;March&quot;) %&gt;% 
@@ -798,7 +878,7 @@ W 21 St &amp; 6 Ave
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Bottom 10 terminal stations in the month of January
+<pre class="r"><code># Bottom 5 terminal stations in the month of January
 
 citibike_tidy %&gt;% 
   filter(start_month == &quot;January&quot;) %&gt;% 
@@ -866,7 +946,7 @@ Henry St &amp; W 9 St
 </tr>
 </tbody>
 </table>
-<pre class="r"><code># Bottom 10 terminal stations in the month of March
+<pre class="r"><code># Bottom 5 terminal stations in the month of March
 
 citibike_tidy %&gt;% 
   filter(start_month == &quot;March&quot;) %&gt;% 
@@ -1079,12 +1159,35 @@ night
 <p><img src="analysis_files/figure-html/linear_mod_res-1.png" width="672" /></p>
 <pre class="r"><code>citibike_tidy %&gt;% 
   modelr::add_residuals(fit) %&gt;% 
-  gather(key = time, value = drop_var, morning:night) %&gt;% 
+  gather(key = time, value = drop_var, overnight:night) %&gt;% 
   select(-drop_var) %&gt;% 
   ggplot(aes(x = time, y = resid)) +
   geom_violin()</code></pre>
 <p><img src="analysis_files/figure-html/linear_mod_res-2.png" width="672" /></p>
-<p>We’re going to try cross-validating and comparing to a simpler model that DOESN’T include time of day</p>
+<p>We’re going to try cross-validating and comparing to a simpler model that DOESN’T include time of day.</p>
+<p>We wanted to see if our model worked better than a simpler model that only included gender and age. So we used cross-validation to test if adding time of day improved our RMSE.</p>
+<pre class="r"><code>cv_citibike = 
+  crossv_mc(citibike_tidy, 50)
+
+cv_citibike = 
+  cv_citibike %&gt;% 
+  mutate(our_model = map(train, ~lm(trip_duration ~ rider_age + gender + morning + afternoon + night, data = .)),
+         simple_model = map(train, ~lm(trip_duration ~ rider_age + gender, data = .x))) %&gt;% 
+  mutate(rmse_our = map2_dbl(our_model, test, ~rmse(model = .x, data = .y)),
+         rmse_simple = map2_dbl(simple_model, test, ~rmse(model = .x, data = .y)))
+
+cv_citibike %&gt;% 
+  select(starts_with(&quot;rmse&quot;)) %&gt;% 
+  gather(key = model, value = rmse) %&gt;% 
+  mutate(model = str_replace(model, &quot;rmse_&quot;, &quot;&quot;),
+         model = fct_inorder(model)) %&gt;% 
+  ggplot(aes(x = model, y = rmse)) +
+  geom_violin() +
+  theme_bw() +
+  labs(title = &quot;Violin plots of two linear models&#39; RMSE&quot;,
+       x = &quot;Model&quot;,
+       y = &quot;RMSE&quot;)</code></pre>
+<p><img src="analysis_files/figure-html/Cross%20Validation%20and%20RMSE%20visualization-1.png" width="672" /></p>
 </div>
 <div id="takeaways" class="section level2">
 <h2>Takeaways</h2>
