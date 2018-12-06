@@ -13,6 +13,8 @@ navbar:
         href: analysis.html
       - text: "visualizations"
         href: visualizations.html
+      - text: "screecast"
+        href: screencast.html
     - text: "contact"
       menu:
         - icon: fa-envelope

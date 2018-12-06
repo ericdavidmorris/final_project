@@ -16,6 +16,7 @@ library(viridis)
 library(lubridate)
 library(stringr)
 library(kableExtra)
+library(modelr)
 ```
 
 
@@ -29,7 +30,7 @@ As avid bikers and customers of CitiBike, we wanted to explore how use of Citi B
 
 ## Related Work 
 
-[Todd Schneider](http://toddwschneider.com/), is a NYC-based software developer has written two interesting pieces on CitiBike habits including if the bikes were [faster than taxis](http://toddwschneider.com/posts/taxi-vs-citi-bike-nyc/) and an [enormous analysis of the system data with some pretty sweet visualizations](http://toddwschneider.com/posts/a-tale-of-twenty-two-million-citi-bikes-analyzing-the-nyc-bike-share-system/). Mr. Schneider has an intense [GitHub repository](https://github.com/toddwschneider/nyc-citibike-data) on his analysis and methods, which served as a first inspirtation for the project. 
+[Todd Schneider](http://toddwschneider.com/) is a NYC-based software developer has written two interesting pieces on CitiBike habits including if the bikes were [faster than taxis](http://toddwschneider.com/posts/taxi-vs-citi-bike-nyc/) and an [enormous analysis of the system data with some pretty sweet visualizations](http://toddwschneider.com/posts/a-tale-of-twenty-two-million-citi-bikes-analyzing-the-nyc-bike-share-system/). Mr. Schneider has an intense [GitHub repository](https://github.com/toddwschneider/nyc-citibike-data) on his analysis and methods, which served as a first inspirtation for the project. 
 
 ## Initial Questions 
 
@@ -127,7 +128,7 @@ citibike_tidy %>%
 In our initial descriptive analysis, we found that there were more than three times as many trips by male riders than female riders. The average age of riders in both months regardless of gender was around 40 years old, and the median ages by gender differed by two years. 
 
 
-## Station Usage
+### Station Usage
 
 #### Starting station
 
@@ -236,7 +237,7 @@ layout(
 ```
 
 
-### Most (and least) used starting stations
+#### Most (and least) used starting stations
 
 ```{r Starting Station Kables}
 
@@ -304,7 +305,7 @@ citibike_tidy %>%
 ```
 
 
-### Most (and least) used terminal stations
+#### Most (and least) used terminal stations
 
 ```{r Ending Station Kables}
 # Top 5 terminal stations in the month of January
